@@ -1,0 +1,48 @@
+services:
+  outreach:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: outreach:local
+    working_dir: /app
+    environment:
+      OUTREACH_PROJECT_DIR: /app/projects/${OUTREACH_PROJECT_SLUG:-example-project}
+      PYTHONUNBUFFERED: "1"
+      DISPLAY: ":99"
+    volumes:
+      - ./projects:/app/projects
+    ports:
+      - "8787:8787"
+    shm_size: ${OUTREACH_SHM_SIZE:-1gb}
+    cpus: ${OUTREACH_CPUS:-2.0}
+    mem_limit: ${OUTREACH_MEM_LIMIT:-4g}
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        limits:
+          cpus: "${OUTREACH_CPUS:-2.0}"
+          memory: ${OUTREACH_MEM_LIMIT:-4g}
+
+  x-outreach:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: outreach:local
+    working_dir: /app/x-outreach
+    environment:
+      OUTREACH_PROJECT_DIR: /app/projects/${OUTREACH_PROJECT_SLUG:-example-project}
+      PYTHONUNBUFFERED: "1"
+      DISPLAY: ":99"
+    volumes:
+      - ./projects:/app/projects
+    shm_size: ${OUTREACH_SHM_SIZE:-1gb}
+    cpus: ${OUTREACH_CPUS:-2.0}
+    mem_limit: ${OUTREACH_MEM_LIMIT:-4g}
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        limits:
+          cpus: "${OUTREACH_CPUS:-2.0}"
+          memory: ${OUTREACH_MEM_LIMIT:-4g}

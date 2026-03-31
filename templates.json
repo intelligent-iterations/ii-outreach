@@ -1,0 +1,90 @@
+{
+  "competitor_alternative": {
+    "dm_templates": {
+      "fellow_user": [
+        "Hey {username} - saw your {post_or_comment} about {competitor_mentioned}. I maintain {product_name}, which I built after doing this kind of outreach manually for too long. The useful part is {value_prop}. If you want, I can send the repo and get your honest take.",
+        "Hey {username}, your note about {competitor_mentioned} felt close to the problem that pushed me to build {product_name}. It's open source, and the core idea is {value_prop}. Happy to send the repo if you'd like to poke holes in it."
+      ],
+      "feedback_request": [
+        "Hey {username}, saw your post in r/{subreddit} about {topic}. I'm the maintainer of {product_name}, an open-source repo for this exact workflow. It helps by {value_prop}. If you're open to blunt feedback requests from strangers on Reddit, I'd genuinely value yours.",
+        "Hey {username}, I came across your comment about {topic}. I built {product_name} because I wanted a less messy way to do this than spreadsheets and one-off prompts. The main thing it does is {value_prop}. Happy to share if you're up for a quick critique."
+      ],
+      "pain_point": [
+        "Hey {username}, saw your {post_or_comment} about {pain_point}. That's basically the reason I built {product_name}. It's open source, and the core value is {value_prop}. If helpful, I can send the repo.",
+        "Hey {username}, your comment about {pain_point} felt painfully familiar. {product_name} came out of that exact problem. The practical part is {value_prop}. Happy to share it if useful."
+      ],
+      "soft_tease": [
+        "Hey {username}, saw your {post_or_comment} about {topic}. I think {product_name} might be relevant. It's an open-source repo built around {pain_point}, and in practice it helps by {value_prop}. If you want, I can send it over.",
+        "Hey {username}, your comment about {topic} looked like a fit for something I maintain. {product_name} is basically my attempt at making {pain_point} less manual. The useful part is {value_prop}. Happy to share if helpful."
+      ]
+    },
+    "comment_templates": {
+      "competitor_mention": [
+        "Full disclosure: I maintain {product_name}. I built it after doing too much of this manually. It's open source, and the bit people usually care about is {value_prop}. {cta}",
+        "If you're comparing options, I think {product_name} is worth a look. I'm biased because I maintain it, but the actual workflow is pretty straightforward: {value_prop}. {cta}"
+      ],
+      "recommendation_request": [
+        "If you're still looking, {product_name} might fit. It's an open-source repo I maintain for {pain_point}, and the main thing it does is {value_prop}. {cta}",
+        "Might be worth checking {product_name}. I built it for this workflow because the usual process felt too manual and too spam-prone. The key part is {value_prop}. {cta}"
+      ],
+      "pain_point": [
+        "That pain point is exactly why I built {product_name}. It's open source, and the main benefit is {value_prop}. {cta}",
+        "This is basically the problem statement behind {product_name}. The part that tends to matter most is {value_prop}. {cta}"
+      ],
+      "general_recommendation": [
+        "{product_name} might be relevant here if you're trying to improve {topic}. I'm the maintainer, so obvious bias warning, but the big idea is {value_prop}. {cta}",
+        "Could be worth a look: {product_name}. It's an open-source repo for {pain_point}, and the useful part is {value_prop}. {cta}"
+      ]
+    },
+    "dm_subjects": {
+      "fellow_user": "open source alternative",
+      "feedback_request": "would you sanity check this?",
+      "pain_point": "built this for {pain_point}",
+      "soft_tease": "thought this might be relevant"
+    }
+  },
+  "problem_aware": {
+    "dm_templates": {
+      "fellow_user": [
+        "Hey {username} - saw your {post_or_comment} about {pain_point}. I built {product_name} for that exact workflow. It's open source, and the useful part is {value_prop}. If you're open, happy to send the repo over.",
+        "Hey {username}, I came across your note about {pain_point}. {product_name} is my attempt to make that less manual, mostly through {value_prop}. If helpful, I can send it."
+      ],
+      "feedback_request": [
+        "Hey {username}, your post about {topic} felt very on-target for something I maintain. {product_name} helps with {pain_point}, and the strongest part is {value_prop}. If you're open to a quick look, I'd love your reaction.",
+        "Hey {username}, saw your comment about {topic}. I'm working on {product_name} for {target_audience}, mainly to make {pain_point} less annoying. It does that through {value_prop}. Happy to share if useful."
+      ],
+      "pain_point": [
+        "Hey {username}, that's exactly the kind of issue {product_name} is meant to fix. The reason people try it is {value_prop}. If you want, I can send the repo.",
+        "Hey {username}, your comment about {pain_point} is very much the problem statement behind {product_name}. The practical benefit is {value_prop}. Happy to share more."
+      ],
+      "soft_tease": [
+        "Hey {username}, saw your {post_or_comment} about {topic}. There might be a fit with {product_name} because it helps with {pain_point}. The core value is {value_prop}. If you'd like, I can send it.",
+        "Hey {username}, your post looked relevant to something I built. {product_name} is for teams dealing with {pain_point}, and the key differentiator is {value_prop}. Happy to share if useful."
+      ]
+    },
+    "comment_templates": {
+      "competitor_mention": [
+        "If you're already evaluating tools, {product_name} might be worth adding to the list. I maintain it, and it helps with {pain_point}, mainly through {value_prop}. {cta}",
+        "Another option here is {product_name}. It's open source, and the part people usually care about is {value_prop}. {cta}"
+      ],
+      "recommendation_request": [
+        "If you're looking for options, {product_name} could fit. It's built around {pain_point}, with a focus on {value_prop}. I'm the maintainer, for transparency. {cta}",
+        "Might be relevant: {product_name}. It helps with {pain_point}, especially if {value_prop} matters to you. {cta}"
+      ],
+      "pain_point": [
+        "That problem is exactly why {product_name} exists. I built it because I kept running into the same thing. The core benefit is {value_prop}. {cta}",
+        "This sounds like a strong fit for {product_name}. It was built to make {pain_point} easier, largely through {value_prop}. {cta}"
+      ],
+      "general_recommendation": [
+        "{product_name} may be relevant here. It's an open-source repo for this workflow, and the key value is {value_prop}. {cta}",
+        "Could be worth a look: {product_name}. It is useful for {topic} because {value_prop}. {cta}"
+      ]
+    },
+    "dm_subjects": {
+      "fellow_user": "re: {pain_point}",
+      "feedback_request": "quick maintainer question",
+      "pain_point": "thought of your post",
+      "soft_tease": "{topic}"
+    }
+  }
+}

@@ -7,12 +7,27 @@
 
 <p align="center">
   <a href="https://github.com/intelligent-iterations/ii-outreach/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+  <a href="https://github.com/intelligent-iterations/ii-outreach/actions/workflows/ci.yml"><img src="https://github.com/intelligent-iterations/ii-outreach/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://discord.gg/G7Qnnhy"><img src="https://img.shields.io/badge/discord-join-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
   <a href="https://github.com/intelligent-iterations/ii-outreach/issues"><img src="https://img.shields.io/badge/issues-welcome-brightgreen.svg" alt="Issues welcome"></a>
   <a href="https://github.com/intelligent-iterations/ii-outreach/discussions"><img src="https://img.shields.io/badge/discussions-enabled-black.svg" alt="Discussions"></a>
 </p>
 
 ii-outreach is an open-source, agent-first outreach engine for Codex and Claude Code. It turns a product brief into reusable Reddit and X strategy, project-scoped auth, and review-first action queues instead of one-off scripts or prompt dumps.
+
+<p align="center">
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#commands">Commands</a> •
+  <a href="#community">Community</a> •
+  <a href="./CONTRIBUTING.md">Contributing</a>
+</p>
+
+## What You Get
+
+- A symmetric Reddit + X codebase that agents can navigate quickly
+- Gitignored per-project runtime state under `projects/<slug>/`
+- Review-first action queues instead of direct-post-by-default automation
+- Starter assets and guidance that can be copied into new projects cleanly
 
 ## Overview
 
@@ -101,6 +116,12 @@ cp starter-assets/x/config.example.json "$OUTREACH_PROJECT_DIR/x/config.json"
 cp starter-assets/x/.env.example "$OUTREACH_PROJECT_DIR/x/.env"
 ```
 
+Or start from the tracked scaffold:
+
+```bash
+cp -R projects/_template/. "$OUTREACH_PROJECT_DIR"
+```
+
 Then ask the operator agent for a real setup, for example:
 
 ```text
@@ -182,7 +203,7 @@ tests/
   x/
 ```
 
-See [projects/README.md](/Users/admin/outreach/projects/README.md), [AGENTS.md](/Users/admin/outreach/AGENTS.md), and [docs/platforms/x.md](/Users/admin/outreach/docs/platforms/x.md) for the repo contract.
+See [projects/README.md](./projects/README.md), [AGENTS.md](./AGENTS.md), and [docs/platforms/x.md](./docs/platforms/x.md) for the repo contract.
 
 ## Open Source
 

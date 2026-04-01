@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/reddit.txt
+          pip install -r requirements/x.txt
+
+      - name: Run unit tests
+        run: |
+          python -m unittest \
+            tests.test_actions_cli \
+            tests.test_review_queue \
+            tests.test_project_paths \
+            tests.test_browser_cookies \
+            tests.x.test_actions_cli \
+            tests.x.test_main \
+            tests.x.test_project_paths \
+            tests.x.test_search \
+            tests.x.test_browser_cookies

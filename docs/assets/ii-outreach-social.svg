@@ -1,0 +1,66 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="56" x2="1200" y2="592" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1220"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="160" y1="132" x2="1110" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14B8A6"/>
+      <stop offset="1" stop-color="#60A5FA"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="#050816"/>
+  <rect x="32" y="32" width="1216" height="576" rx="28" fill="url(#bg)" stroke="#1F2937" stroke-width="2"/>
+
+  <rect x="88" y="98" width="226" height="44" rx="22" fill="#0F172A" stroke="#1F2937"/>
+  <text x="201" y="126" text-anchor="middle" fill="#93C5FD" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">
+    intelligent iterations
+  </text>
+
+  <text x="88" y="242" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="700">
+    ii-outreach
+  </text>
+  <text x="88" y="308" fill="#CBD5E1" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="500">
+    Agent-first Reddit and X outreach engine for Codex and Claude Code
+  </text>
+  <text x="88" y="360" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="24">
+    Product brief in. Guidance, auth, and review-first action queues out.
+  </text>
+
+  <rect x="88" y="420" width="312" height="86" rx="20" fill="#0F172A" stroke="#1F2937"/>
+  <text x="116" y="454" fill="#14B8A6" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">
+    PROJECT STATE
+  </text>
+  <text x="116" y="490" fill="#E5E7EB" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">
+    projects/&lt;slug&gt;/
+  </text>
+
+  <rect x="428" y="420" width="328" height="86" rx="20" fill="#0F172A" stroke="#1F2937"/>
+  <text x="456" y="454" fill="#60A5FA" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">
+    ACTION QUEUES
+  </text>
+  <text x="456" y="490" fill="#E5E7EB" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">
+    by_status / by_run
+  </text>
+
+  <rect x="790" y="420" width="396" height="86" rx="20" fill="#0F172A" stroke="#1F2937"/>
+  <text x="818" y="454" fill="#F59E0B" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">
+    COMMUNITY
+  </text>
+  <text x="818" y="490" fill="#E5E7EB" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">
+    github.com/intelligent-iterations
+  </text>
+
+  <path d="M804 126H1130C1163.14 126 1190 152.86 1190 186V328C1190 361.14 1163.14 388 1130 388H804C770.86 388 744 361.14 744 328V186C744 152.86 770.86 126 804 126Z" fill="#0B1120" stroke="#1F2937"/>
+  <rect x="776" y="154" width="160" height="24" rx="12" fill="#111827"/>
+  <rect x="776" y="196" width="248" height="16" rx="8" fill="#1E293B"/>
+  <rect x="776" y="224" width="202" height="16" rx="8" fill="#1E293B"/>
+  <rect x="776" y="264" width="382" height="18" rx="9" fill="url(#accent)"/>
+  <rect x="776" y="296" width="328" height="18" rx="9" fill="#334155"/>
+  <rect x="776" y="328" width="222" height="18" rx="9" fill="#334155"/>
+
+  <circle cx="1138" cy="94" r="10" fill="#14B8A6"/>
+  <circle cx="1168" cy="118" r="6" fill="#60A5FA"/>
+  <circle cx="1096" cy="82" r="5" fill="#F59E0B"/>
+</svg>

@@ -1,8 +1,8 @@
 import asyncio
 import re
 
-from src.runtime.models import ActionResult
-from src.shared.utils import human_type, random_delay, take_error_screenshot
+from src.reddit.runtime.models import ActionResult
+from src.reddit.shared.utils import human_type, random_delay, take_error_screenshot
 
 # Return values - use ActionResult enum
 COMMENT_SUCCESS = ActionResult.SUCCESS

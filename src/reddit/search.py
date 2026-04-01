@@ -2,8 +2,8 @@ import asyncio
 import re
 from datetime import datetime, timedelta
 
-from src.runtime.state import can_engage_user
-from src.shared.utils import random_delay, take_error_screenshot
+from src.reddit.runtime.state import can_engage_user
+from src.reddit.shared.utils import random_delay, take_error_screenshot
 
 # Maximum age for posts to be considered (in days)
 MAX_POST_AGE_DAYS = 180
@@ -190,6 +190,54 @@ def _is_post_too_old(post_time, max_age_days=MAX_POST_AGE_DAYS):
     return age.days > max_age_days
 
 
+def _clamp_ratio(value, default=0.5):
+    try:
+        ratio = float(value)
+    except (TypeError, ValueError):
+        return default
+    return max(0.0, min(1.0, ratio))
+
+
+def get_search_targets(config: dict, target_fresh: int = TARGET_FRESH_LEADS) -> dict:
+    """Compute how many post vs comment leads to fetch for a keyword."""
+    search_cfg = config.get("search", {})
+    search_type = (search_cfg.get("search_type", "comment") or "comment").strip().lower()
+    target_fresh = max(1, int(target_fresh))
+
+    if search_type == "post":
+        return {"search_type": "post", "posts": target_fresh, "comments": 0}
+    if search_type == "mixed":
+        post_ratio = _clamp_ratio(search_cfg.get("post_ratio", 0.5), default=0.5)
+        post_target = int(round(target_fresh * post_ratio))
+        post_target = max(0, min(target_fresh, post_target))
+        comment_target = target_fresh - post_target
+        return {"search_type": "mixed", "posts": post_target, "comments": comment_target}
+    return {"search_type": "comment", "posts": 0, "comments": target_fresh}
+
+
+def _deduplicate_combined_leads(leads: list[dict]) -> list[dict]:
+    seen = set()
+    unique = []
+    for lead in leads:
+        key = (lead.get("username", "").lower(), lead.get("permalink", ""))
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(lead)
+    return unique
+
+
+def _interleave_leads(post_leads: list[dict], comment_leads: list[dict]) -> list[dict]:
+    combined = []
+    max_len = max(len(post_leads), len(comment_leads))
+    for i in range(max_len):
+        if i < len(post_leads):
+            combined.append(post_leads[i])
+        if i < len(comment_leads):
+            combined.append(comment_leads[i])
+    return combined
+
+
 async def search_comments(page, keyword, config, target_fresh=TARGET_FRESH_LEADS):
     """Search Reddit for a keyword, extract leads from Comments tab.
 
@@ -249,6 +297,46 @@ async def search_comments(page, keyword, config, target_fresh=TARGET_FRESH_LEADS
         await take_error_screenshot(page, f"search_{keyword.replace(' ', '_')}")
 
     return fresh_leads[:target_fresh]  # Cap at target
+
+
+async def search_reddit_leads(page, keyword, config, target_fresh=TARGET_FRESH_LEADS):
+    """Search Reddit using comment, post, or mixed mode based on config."""
+    targets = get_search_targets(config, target_fresh)
+    search_type = targets["search_type"]
+
+    if search_type == "comment":
+        return await search_comments(page, keyword, config, target_fresh=targets["comments"])
+
+    if search_type == "post":
+        return (await search_posts(page, keyword, config))[:targets["posts"]]
+
+    post_leads = []
+    comment_leads = []
+
+    if targets["posts"] > 0:
+        post_leads = (await search_posts(page, keyword, config))[:targets["posts"]]
+    if targets["comments"] > 0:
+        comment_leads = await search_comments(page, keyword, config, target_fresh=targets["comments"])
+
+    combined = _deduplicate_combined_leads(_interleave_leads(post_leads, comment_leads))
+
+    # Backfill if one side came up short.
+    if len(combined) < target_fresh:
+        extras = _deduplicate_combined_leads(post_leads + comment_leads)
+        seen = {
+            (lead.get("username", "").lower(), lead.get("permalink", ""))
+            for lead in combined
+        }
+        for lead in extras:
+            key = (lead.get("username", "").lower(), lead.get("permalink", ""))
+            if key in seen:
+                continue
+            combined.append(lead)
+            seen.add(key)
+            if len(combined) >= target_fresh:
+                break
+
+    return combined[:target_fresh]
 
 
 async def search_posts(page, keyword, config):

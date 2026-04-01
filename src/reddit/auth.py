@@ -5,8 +5,8 @@ import platform
 import zendriver as zd
 from zendriver.core.config import Config as ZDConfig
 
-from src.shared.browser_cookies import load_browser_cookies
-from src.shared.utils import BASE_DIR, human_type, random_delay, take_error_screenshot
+from src.reddit.shared.browser_cookies import load_browser_cookies, save_browser_cookies
+from src.reddit.shared.utils import BASE_DIR, human_type, random_delay, take_error_screenshot
 
 # macOS needs explicit Chrome path and longer connection timeout
 CHROME_PATH_MACOS = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
@@ -41,7 +41,7 @@ def _resolve_account(account):
     password = os.getenv("REDDIT_PASSWORD") or account.get("password", "")
     cookies_rel = os.getenv("REDDIT_COOKIES_PATH") or account.get(
         "cookies_path",
-        f"data/cookies_{username}.json" if username else "data/cookies_reddit.json",
+        f"auth/cookies_{username}.json" if username else "auth/cookies_reddit.json",
     )
     cookies_path = cookies_rel if os.path.isabs(cookies_rel) else os.path.join(BASE_DIR, cookies_rel)
 
@@ -88,8 +88,8 @@ async def login(config, account, headless=False):
 
     if not account["username"] or not account["password"]:
         raise RuntimeError(
-            "Reddit credentials missing. Set REDDIT_USERNAME/REDDIT_PASSWORD in .env "
-            "or provide username/password in config.json before onboarding."
+            "Reddit credentials missing. Set REDDIT_USERNAME/REDDIT_PASSWORD in reddit/.env "
+            "or provide username/password in reddit/config.json before onboarding."
         )
 
     # Fresh login
@@ -98,8 +98,8 @@ async def login(config, account, headless=False):
     # Save cookies
     try:
         os.makedirs(os.path.dirname(cookies_path), exist_ok=True)
-        await browser.cookies.save(cookies_path)
-        print(f"[AUTH] Cookies saved to {cookies_path}")
+        cookie_format, cookie_count = await save_browser_cookies(browser, cookies_path)
+        print(f"[AUTH] Saved {cookie_count} {cookie_format} cookies to {cookies_path}")
     except Exception as e:
         print(f"[AUTH] Failed to save cookies: {e}")
 

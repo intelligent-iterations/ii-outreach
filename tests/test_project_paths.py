@@ -18,7 +18,7 @@ class ProjectPathsTests(unittest.TestCase):
             os.environ["OUTREACH_PROJECT_DIR"] = self._old_env
 
     def _reload(self):
-        import src.shared.project_paths as project_paths
+        import src.reddit.shared.project_paths as project_paths
 
         return importlib.reload(project_paths)
 
@@ -27,13 +27,15 @@ class ProjectPathsTests(unittest.TestCase):
 
         module = self._reload()
 
+        self.assertEqual(Path(module.MODULE_DIR), REPO_DIR / "src" / "reddit")
         self.assertEqual(Path(module.REPO_DIR), REPO_DIR)
         self.assertEqual(Path(module.PROJECT_DIR), REPO_DIR)
 
-    def test_absolute_project_dir_is_respected(self):
+    def test_absolute_project_dir_is_mapped_to_reddit_platform_dir(self):
         custom_project = (REPO_DIR / "projects" / "content-engine").resolve()
         os.environ["OUTREACH_PROJECT_DIR"] = str(custom_project)
 
         module = self._reload()
 
-        self.assertEqual(Path(module.PROJECT_DIR), custom_project)
+        self.assertEqual(Path(module.PROJECT_ROOT), custom_project)
+        self.assertEqual(Path(module.PROJECT_DIR), custom_project / "reddit")

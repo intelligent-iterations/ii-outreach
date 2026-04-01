@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discord
+    url: https://discord.gg/G7Qnnhy
+    about: Ask questions and discuss workflows with the community.
+  - name: Security policy
+    url: https://github.com/intelligent-iterations/ii-outreach/blob/main/SECURITY.md
+    about: Report sensitive issues privately and avoid opening public exploits.

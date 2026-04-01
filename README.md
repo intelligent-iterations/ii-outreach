@@ -1,96 +1,107 @@
-<h1 align="center">Outreach</h1>
+<h1 align="center">ii-outreach</h1>
 
 <p align="center">
   Agent-first Reddit and X outreach scaffolding.<br/>
-  Turn a product brief into saved research, voice, templates, auth, and reviewable posting intent.
+  Turn a product brief into saved guidance, auth, and reviewable action queues.
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+" />
-  <img src="https://img.shields.io/badge/docker-browser--automation-2496ED?logo=docker&logoColor=white" alt="Docker browser automation" />
-  <img src="https://img.shields.io/badge/platforms-reddit%20%7C%20x-111111" alt="Platforms Reddit and X" />
-  <img src="https://img.shields.io/badge/model-agent--first-0A7E3F" alt="Agent first" />
+  <a href="https://github.com/intelligent-iterations/ii-outreach/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+  <a href="https://discord.gg/G7Qnnhy"><img src="https://img.shields.io/badge/discord-join-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://github.com/intelligent-iterations/ii-outreach/issues"><img src="https://img.shields.io/badge/issues-welcome-brightgreen.svg" alt="Issues welcome"></a>
+  <a href="https://github.com/intelligent-iterations/ii-outreach/discussions"><img src="https://img.shields.io/badge/discussions-enabled-black.svg" alt="Discussions"></a>
 </p>
 
----
+ii-outreach is an open-source, agent-first outreach engine for Codex and Claude Code. It turns a product brief into reusable Reddit and X strategy, project-scoped auth, and review-first action queues instead of one-off scripts or prompt dumps.
 
-Outreach is the repo you open when you do not want "outreach" to mean another spreadsheet, another prompt dump, and another pile of one-off manual replies.
+## Overview
 
-The shared repo stays clean. Real operator state lives under gitignored `projects/<slug>/`. That means each clone gets reusable code and docs, while product research, auth, cookies, staged actions, and outputs stay local.
+Outreach keeps the tracked repo reusable and pushes live operator state into gitignored `projects/<slug>/`.
 
-The operator is the brain. Codex or Claude writes the project state, then the runtime uses that saved state to find leads, choose a reply shape, and stage intended actions before anything is posted.
+The repo now has a symmetric platform model:
 
-## What It Does
+- Reddit code lives under `src/reddit/`
+- X code lives under `src/x/`
+- Starter assets live under `starter-assets/`
+- Per-project runtime state lives under `projects/<slug>/reddit/` and `projects/<slug>/x/`
 
-- turns a product brief into reusable Reddit and X strategy
-- saves product research and voice in repo-local project state
-- generates keywords, strategy buckets, templates, and prompt files
-- onboards browser auth locally with saved cookies per project
-- stages intended actions for review before dispatch
+## Why This Exists
+
+- Outreach work should be review-first, not “LLM says post this now.”
+- Product context should live in durable project state, not vanish into chat.
+- Platform auth, run logs, and staged actions should stay local and isolated per project.
+- Codex and Claude Code should be able to understand the repo shape quickly and operate it safely.
+
+## Community
+
+- Discord: [Intelligent Iterations Discord](https://discord.gg/G7Qnnhy)
+- Issues: [GitHub Issues](https://github.com/intelligent-iterations/ii-outreach/issues)
+- Discussions: [GitHub Discussions](https://github.com/intelligent-iterations/ii-outreach/discussions)
+- Security: [SECURITY.md](https://github.com/intelligent-iterations/ii-outreach/blob/main/SECURITY.md)
 
 ## Project Model
 
-Use one gitignored project folder per promoted product:
+Each product gets one gitignored project folder:
 
 ```text
 projects/<slug>/
-  .env
-  config.json
-  templates.json
-  prompts/
   workspace/
-  data/
-  output/
-  tracking/
-  x-outreach/
-    .env
+  research/
+  reddit/
     config.json
-    data/
+    templates.json
+    guidance/
+    auth/
     output/
+      actions/
+      logs/
+    tracking/
+  x/
+    config.json
+    auth/
+    output/
+      actions/
+      logs/
+    tracking/
 ```
 
-See [projects/README.md](/Users/admin/outreach/projects/README.md) for the bootstrap shape.
-
-## Workflow
-
-1. Create or select `projects/<slug>/`
-2. Save the product brief in `workspace/PRODUCT_PROFILE.md`
-3. Save voice examples and research notes in the project workspace
-4. Generate project config, prompts, and templates
-5. Run onboarding locally for Reddit and optional X
-6. Run safe mode and review staged actions
-7. Approve or reject before dispatch
+Use `workspace/` for durable product context and `research/` for niche notes. Use platform folders for platform-specific config, auth, tracking, and action state.
 
 ## Quick Start
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-pip install -r x-outreach/requirements.txt
+pip install -r requirements/reddit.txt
+pip install -r requirements/x.txt
 ```
 
-Create a project:
+Bootstrap a project:
 
 ```bash
 export OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics"
 
 mkdir -p \
   "$OUTREACH_PROJECT_DIR/workspace" \
-  "$OUTREACH_PROJECT_DIR/prompts" \
-  "$OUTREACH_PROJECT_DIR/data" \
-  "$OUTREACH_PROJECT_DIR/output" \
-  "$OUTREACH_PROJECT_DIR/tracking" \
-  "$OUTREACH_PROJECT_DIR/x-outreach/data" \
-  "$OUTREACH_PROJECT_DIR/x-outreach/output"
+  "$OUTREACH_PROJECT_DIR/research" \
+  "$OUTREACH_PROJECT_DIR/reddit/auth" \
+  "$OUTREACH_PROJECT_DIR/reddit/guidance" \
+  "$OUTREACH_PROJECT_DIR/reddit/output/actions" \
+  "$OUTREACH_PROJECT_DIR/reddit/output/logs" \
+  "$OUTREACH_PROJECT_DIR/reddit/tracking" \
+  "$OUTREACH_PROJECT_DIR/x/auth" \
+  "$OUTREACH_PROJECT_DIR/x/output/actions" \
+  "$OUTREACH_PROJECT_DIR/x/output/logs" \
+  "$OUTREACH_PROJECT_DIR/x/tracking"
 
-cp config.example.json "$OUTREACH_PROJECT_DIR/config.json"
-cp templates.json "$OUTREACH_PROJECT_DIR/templates.json"
-cp -R prompts/. "$OUTREACH_PROJECT_DIR/prompts/"
-cp x-outreach/config.example.json "$OUTREACH_PROJECT_DIR/x-outreach/config.json"
+cp starter-assets/reddit/config.example.json "$OUTREACH_PROJECT_DIR/reddit/config.json"
+cp starter-assets/reddit/templates.example.json "$OUTREACH_PROJECT_DIR/reddit/templates.json"
+cp -R starter-assets/reddit/guidance/. "$OUTREACH_PROJECT_DIR/reddit/guidance/"
+cp starter-assets/x/config.example.json "$OUTREACH_PROJECT_DIR/x/config.json"
+cp starter-assets/x/.env.example "$OUTREACH_PROJECT_DIR/x/.env"
 ```
 
-Then ask the agent for something like:
+Then ask the operator agent for a real setup, for example:
 
 ```text
 My product is an ingredient-checking app for health-conscious shoppers.
@@ -99,158 +110,83 @@ Voice should be helpful, specific, low-pressure, and honest that I built it.
 Turn this into a Reddit + X outreach setup and stage reviewable actions.
 ```
 
-## Docker
+## Commands
 
-The repo includes a browser-automation container for Chromium + `zendriver`.
-
-Default resource floor:
-
-- `2 vCPU`
-- `4 GB RAM`
-- `1 GB /dev/shm`
-
-Recommended:
+Reddit:
 
 ```bash
-export OUTREACH_CPUS=4
-export OUTREACH_MEM_LIMIT=8g
-export OUTREACH_SHM_SIZE=1gb
+OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.reddit.setup_auth
+OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.reddit.main
+OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.reddit.actions summary
+OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.reddit.review_ui
 ```
 
-Build:
+X:
 
 ```bash
-docker compose build
+OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.x.setup_auth
+OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.x.main --headless
+OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.x.actions summary
+OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.x.main --dispatch-approved
 ```
 
-Set the active project slug:
+Default runs are review-first. They stage artifacts instead of posting immediately.
+
+## Action Queues
+
+Canonical action roots:
+
+- Reddit: `projects/<slug>/reddit/output/actions/`
+- X: `projects/<slug>/x/output/actions/`
+
+Canonical layout:
+
+```text
+output/actions/
+  by_status/
+    pending_review/
+    approved/
+    scheduled/
+    rejected/
+    dispatching/
+    dispatched/
+    failed/
+  by_run/
+    <run-id>/
+      manifest.json
+```
+
+Use the CLI to inspect queues:
 
 ```bash
-export OUTREACH_PROJECT_SLUG=acme-analytics
+OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.reddit.actions list --status approved
+OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.x.actions list --status approved
 ```
-
-Reddit onboarding:
-
-```bash
-docker compose run --rm outreach python -m src.setup_auth
-```
-
-Reddit safe mode:
-
-```bash
-docker compose run --rm outreach python -m src.main
-```
-
-Review UI:
-
-```bash
-docker compose run --rm --service-ports outreach python -m src.review_ui --host 0.0.0.0
-```
-
-X onboarding:
-
-```bash
-docker compose run --rm x-outreach python -m src.setup_auth
-```
-
-X dry run:
-
-```bash
-docker compose run --rm x-outreach python -m src.main --headless --dry-run
-```
-
-## Safe-Mode Model
-
-This repo separates generation from posting.
-
-- product and strategy state are saved under the active project
-- local browser cookies are reused from that project only
-- safe mode stages JSON action artifacts before dispatch
-- approval is a separate step from discovery
-
-Reddit staged actions are written under:
-
-`projects/<slug>/output/intended_actions/<run-id>/`
-
-X staged actions are written under:
-
-`projects/<slug>/x-outreach/output/intended_actions/<run-id>/`
 
 ## Repo Layout
 
 ```text
+starter-assets/
+  reddit/
+  x/
+
+requirements/
+  reddit.txt
+  x.txt
+
 src/
-  app/         CLI entrypoints and top-level Reddit workflows
-  decision/    template selection, discovery, and triage
-  integrations/ operator-facing helper integrations
-  reddit/      Reddit auth, search, comments, DMs
-  runtime/     models, state, logs, review queue
-  shared/      project paths, config loading, utilities
+  reddit/
+  x/
 
-x-outreach/src/
-  app/         X entrypoints
-  platform/    X auth, search, reply
-  runtime/     X state and staged action queue
-  shared/      X project path and utility helpers
+tests/
+  x/
 ```
 
-For a fuller map, see [REPO_STRUCTURE.md](/Users/admin/outreach/REPO_STRUCTURE.md).
+See [projects/README.md](/Users/admin/outreach/projects/README.md), [AGENTS.md](/Users/admin/outreach/AGENTS.md), and [docs/platforms/x.md](/Users/admin/outreach/docs/platforms/x.md) for the repo contract.
 
-## Security
+## Open Source
 
-This repo is only safe to publish if the trust boundary stays intact:
-
-- shared scaffolding belongs in git
-- live project state stays under gitignored `projects/<slug>/`
-- credentials should prefer per-project `.env`
-- cookies, screenshots, logs, and review artifacts stay local
-
-Read [SECURITY.md](/Users/admin/outreach/SECURITY.md) and the audit at [docs/SECURITY_AUDIT.md](/Users/admin/outreach/docs/SECURITY_AUDIT.md).
-
-## Key Docs
-
-- [AGENTS.md](/Users/admin/outreach/AGENTS.md)
-- [CLAUDE.md](/Users/admin/outreach/CLAUDE.md)
-- [projects/README.md](/Users/admin/outreach/projects/README.md)
-- [REPO_STRUCTURE.md](/Users/admin/outreach/REPO_STRUCTURE.md)
-
-## Runtime Commands
-
-Normal runs default to safe mode.
-
-```bash
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.main
-```
-
-That stages intended actions under `projects/<slug>/output/intended_actions/` instead of posting them immediately.
-
-Start the review UI:
-
-```bash
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.review_ui
-```
-
-Then open `http://127.0.0.1:8787`, approve or reject staged items, and use the UI's `Dispatch Approved` button when you want the approved actions sent.
-
-If you explicitly want immediate posting and want to bypass review:
-
-```bash
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.main --live-post
-```
-
-## X Usage
-
-```bash
-export OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics"
-cd x-outreach
-python -m src.setup_auth
-python -m src.main --dry-run
-```
-
-## Notes
-
-- The tracked repo only contains shared engine code and starter assets.
-- Real projects should live under gitignored `projects/`.
-- Runtime cookies, screenshots, logs, outputs, and review artifacts should stay out of version control.
-- The repo becomes useful only after the agent tailors it to a real product and voice.
-- Safe mode is the default because review is part of the intended workflow, not an afterthought.
+- License: [MIT](./LICENSE)
+- Contributing: [CONTRIBUTING.md](./CONTRIBUTING.md)
+- Code of conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
+- Security policy: [SECURITY.md](./SECURITY.md)

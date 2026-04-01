@@ -1,0 +1,43 @@
+{
+  "product": {
+    "name": "Your Product",
+    "url": "https://example.com",
+    "summary": "One-line description of the product and the job it does.",
+    "value_prop": "the main reason someone would choose it",
+    "voice_notes": "Helpful, sharp, low-pressure."
+  },
+  "accounts": [
+    {
+      "username": "your_username",
+      "password": "your_password",
+      "cookies_path": "auth/cookies_your_username.json"
+    }
+  ],
+  "strategies": [
+    {
+      "name": "competitor_alternative",
+      "keywords": [
+        "competitor alternative",
+        "better than competitor",
+        "tool for pain point"
+      ],
+      "reply_template": "{product_name} could be relevant here if you're trying to solve {keyword}. The useful part is {value_prop}.",
+      "filters": {
+        "exclude_replies": true,
+        "lang": "en",
+        "min_likes": 0
+      },
+      "max_replies_per_keyword": 3
+    }
+  ],
+  "delays": {
+    "page_load_wait_seconds": 3,
+    "between_actions_min_seconds": 30,
+    "between_actions_max_seconds": 90,
+    "typing_delay_min_ms": 50,
+    "typing_delay_max_ms": 150
+  },
+  "search": {
+    "max_scrolls": 10
+  }
+}

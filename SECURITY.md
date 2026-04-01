@@ -12,10 +12,10 @@ This repo is designed so the shared codebase stays publishable while real operat
 
 ## What Belongs In Git
 
-- Shared runtime code in `src/` and `x-outreach/src/`
-- Starter prompt files in `prompts/`
-- Starter config and template scaffolds
-- Operator docs like `README.md`, `AGENTS.md`, and `CLAUDE.md`
+- Shared runtime code in `src/`
+- Starter assets in `starter-assets/`
+- Dependency lists in `requirements/`
+- Operator docs like `README.md`, `AGENTS.md`, `CLAUDE.md`, and `projects/README.md`
 
 ## What Must Stay Local
 
@@ -23,13 +23,13 @@ This repo is designed so the shared codebase stays publishable while real operat
 - `.env`
 - browser cookie exports
 - run logs
-- intended action artifacts
+- action artifacts
 - screenshots
 - local virtualenvs and caches
 
 ## Preferred Credential Flow
 
-1. Put credentials in `projects/<slug>/.env` or `projects/<slug>/x-outreach/.env`
+1. Put credentials in `projects/<slug>/reddit/.env` or `projects/<slug>/x/.env`
 2. Run onboarding
 3. Let the browser automation save fresh local cookies inside the active project
 4. Use safe mode and staged review before live posting

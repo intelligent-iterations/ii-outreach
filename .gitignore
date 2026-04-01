@@ -18,3 +18,5 @@ downloads/
 projects/*
 !projects/.gitkeep
 !projects/README.md
+!projects/_template/
+!projects/_template/**

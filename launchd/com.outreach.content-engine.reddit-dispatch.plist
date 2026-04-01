@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.outreach.content-engine.reddit-dispatch</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/admin/outreach/scripts/dispatch_due.sh</string>
+    <string>content-engine</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StartInterval</key>
+  <integer>900</integer>
+  <key>WorkingDirectory</key>
+  <string>/Users/admin/outreach</string>
+  <key>StandardOutPath</key>
+  <string>/Users/admin/outreach/projects/content-engine/output/logs/reddit-autopost.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/admin/outreach/projects/content-engine/output/logs/reddit-autopost.log</string>
+</dict>
+</plist>

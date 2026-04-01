@@ -5,19 +5,24 @@ from pathlib import Path
 
 from zendriver import cdp
 
-from src.shared.browser_cookies import detect_cookie_file_format, load_browser_cookies, parse_json_cookie_export
+from src.reddit.shared.browser_cookies import (
+    detect_cookie_file_format,
+    load_browser_cookies,
+    parse_json_cookie_export,
+    save_browser_cookies,
+)
 
 
 class _FakeCookieJar:
     def __init__(self):
-        self.loaded = []
         self.set_batches = []
-
-    async def load(self, cookies_path):
-        self.loaded.append(cookies_path)
+        self.cookies = []
 
     async def set_all(self, cookies):
         self.set_batches.append(cookies)
+
+    async def get_all(self, requests_cookie_format=False):
+        return self.cookies
 
 
 class _FakeBrowser:
@@ -34,7 +39,7 @@ class BrowserCookiesTests(unittest.IsolatedAsyncioTestCase):
             pickle_path.write_bytes(b"\x80\x04fake")
 
             self.assertEqual(detect_cookie_file_format(str(json_path)), "json")
-            self.assertEqual(detect_cookie_file_format(str(pickle_path)), "pickle")
+            self.assertEqual(detect_cookie_file_format(str(pickle_path)), "unsupported")
 
     def test_parse_json_cookie_export(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -74,18 +79,47 @@ class BrowserCookiesTests(unittest.IsolatedAsyncioTestCase):
 
             self.assertEqual(cookie_format, "json")
             self.assertEqual(cookie_count, 1)
-            self.assertEqual(browser.cookies.loaded, [])
             self.assertEqual(len(browser.cookies.set_batches), 1)
 
-    async def test_load_browser_cookies_uses_native_loader_for_pickle_files(self):
+    async def test_load_browser_cookies_rejects_pickle_files(self):
         browser = _FakeBrowser()
         with tempfile.TemporaryDirectory() as tmp:
             cookies_path = Path(tmp) / "cookies.dat"
             cookies_path.write_bytes(b"\x80\x04fake")
 
-            cookie_format, cookie_count = await load_browser_cookies(browser, str(cookies_path))
+            with self.assertRaisesRegex(ValueError, "Only JSON cookie exports are allowed"):
+                await load_browser_cookies(browser, str(cookies_path))
 
-            self.assertEqual(cookie_format, "pickle")
-            self.assertIsNone(cookie_count)
-            self.assertEqual(browser.cookies.loaded, [str(cookies_path)])
-            self.assertEqual(browser.cookies.set_batches, [])
+    async def test_save_browser_cookies_writes_json_export(self):
+        browser = _FakeBrowser()
+        browser.cookies.cookies = [
+            cdp.network.Cookie(
+                name="session",
+                value="abc",
+                domain=".reddit.com",
+                path="/",
+                size=10,
+                http_only=True,
+                secure=True,
+                session=False,
+                priority=cdp.network.CookiePriority.MEDIUM,
+                same_party=False,
+                source_scheme=cdp.network.CookieSourceScheme.SECURE,
+                source_port=443,
+                expires=1774487001.0,
+                same_site=cdp.network.CookieSameSite.LAX,
+                partition_key=None,
+                partition_key_opaque=None,
+            )
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            cookies_path = Path(tmp) / "cookies.json"
+
+            cookie_format, cookie_count = await save_browser_cookies(browser, str(cookies_path))
+
+            self.assertEqual(cookie_format, "json")
+            self.assertEqual(cookie_count, 1)
+            payload = json.loads(cookies_path.read_text())
+            self.assertEqual(payload[0]["name"], "session")
+            self.assertEqual(payload[0]["domain"], ".reddit.com")
+            self.assertEqual(payload[0]["sameSite"], "Lax")

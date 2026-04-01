@@ -1,33 +1,59 @@
 # Projects
 
-Put local project setups under `projects/<slug>/`.
+Put live project state under `projects/<slug>/`.
 
-This directory is gitignored on purpose so each clone can keep its own product state, credentials, cookies, outputs, and review artifacts without leaking contributor-specific setup into the repo.
+This directory is gitignored on purpose so each clone can keep its own product context, credentials, cookies, outputs, and staged actions without leaking operator-specific state back into the shared repo.
 
-Recommended project structure:
+Tracked exception:
+
+- `projects/_template/` is checked in as the canonical scaffold for new projects.
+- Real working projects should be siblings of `_template/`, not edits inside it.
+
+Recommended shape:
 
 ```text
 projects/<slug>/
-  .env
-  config.json
-  templates.json
-  prompts/
-    base_system.txt
-    triage_v2.txt
-    discovery.txt
-    competitor_alternative.txt
-    problem_aware.txt
   workspace/
     PRODUCT_PROFILE.md
     VOICE_EXAMPLES.md
-  data/
-  output/
-  tracking/
-  x-outreach/
+  research/
+    archive/
+      review_batches/
+  reddit/
     .env
     config.json
-    data/
+    templates.json
+    guidance/
+      base_system.md
+      triage_v2.md
+      discovery.md
+      competitor_alternative.md
+      problem_aware.md
+    auth/
+    output/
+      actions/
+        by_status/
+        by_run/
+      archive/
+        legacy_intents/
+        orphaned_auth/
+      logs/
+    tracking/
+  x/
+    .env
+    config.json
+    auth/
+    output/
+      actions/
+        by_status/
+        by_run/
+      archive/
+        legacy_intents/
+      logs/
+    tracking/
 ```
+
+Use `projects/_template/` as the visual reference for the new layout. Copy it to `projects/<slug>/` and then hydrate the platform config files from `starter-assets/`.
 
 Example bootstrap from the repo root:
 
@@ -36,16 +62,47 @@ export OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics"
 
 mkdir -p \
   "$OUTREACH_PROJECT_DIR/workspace" \
-  "$OUTREACH_PROJECT_DIR/prompts" \
-  "$OUTREACH_PROJECT_DIR/data" \
-  "$OUTREACH_PROJECT_DIR/output" \
-  "$OUTREACH_PROJECT_DIR/tracking" \
-  "$OUTREACH_PROJECT_DIR/x-outreach/data"
+  "$OUTREACH_PROJECT_DIR/research" \
+  "$OUTREACH_PROJECT_DIR/reddit/auth" \
+  "$OUTREACH_PROJECT_DIR/reddit/guidance" \
+  "$OUTREACH_PROJECT_DIR/reddit/output/actions" \
+  "$OUTREACH_PROJECT_DIR/reddit/output/logs" \
+  "$OUTREACH_PROJECT_DIR/reddit/tracking" \
+  "$OUTREACH_PROJECT_DIR/x/auth" \
+  "$OUTREACH_PROJECT_DIR/x/output/actions" \
+  "$OUTREACH_PROJECT_DIR/x/output/logs" \
+  "$OUTREACH_PROJECT_DIR/x/tracking"
 
-cp config.example.json "$OUTREACH_PROJECT_DIR/config.json"
-cp templates.json "$OUTREACH_PROJECT_DIR/templates.json"
-cp -R prompts/. "$OUTREACH_PROJECT_DIR/prompts/"
-cp x-outreach/config.example.json "$OUTREACH_PROJECT_DIR/x-outreach/config.json"
+cp starter-assets/reddit/config.example.json "$OUTREACH_PROJECT_DIR/reddit/config.json"
+cp starter-assets/reddit/templates.example.json "$OUTREACH_PROJECT_DIR/reddit/templates.json"
+cp -R starter-assets/reddit/guidance/. "$OUTREACH_PROJECT_DIR/reddit/guidance/"
+cp starter-assets/x/config.example.json "$OUTREACH_PROJECT_DIR/x/config.json"
+cp starter-assets/x/.env.example "$OUTREACH_PROJECT_DIR/x/.env"
 ```
 
-Then run the bots with `OUTREACH_PROJECT_DIR` set to that project root.
+Legacy note:
+
+- Older local projects may still have `prompts/`, `data/`, `x-outreach/`, `review_batches/`, or `intended_actions/`.
+- New work should use `guidance/`, `auth/`, `x/`, and `output/actions/`.
+- If old artifacts must be preserved, archive them consistently:
+  - `research/archive/review_batches/`
+  - `reddit/output/archive/legacy_intents/`
+  - `reddit/output/archive/orphaned_auth/`
+  - `x/output/archive/legacy_intents/`
+
+Canonical action roots:
+
+- Reddit: `projects/<slug>/reddit/output/actions/`
+- X: `projects/<slug>/x/output/actions/`
+
+Fastest way to inspect queues:
+
+```bash
+OUTREACH_PROJECT_DIR="$PWD/projects/<slug>" python -m src.reddit.actions summary
+OUTREACH_PROJECT_DIR="$PWD/projects/<slug>" python -m src.reddit.actions list --status approved
+OUTREACH_PROJECT_DIR="$PWD/projects/<slug>" python -m src.reddit.actions show-run <run-id>
+
+OUTREACH_PROJECT_DIR="$PWD/projects/<slug>" python -m src.x.actions summary
+OUTREACH_PROJECT_DIR="$PWD/projects/<slug>" python -m src.x.actions list --status approved
+OUTREACH_PROJECT_DIR="$PWD/projects/<slug>" python -m src.x.actions show-run <run-id>
+```

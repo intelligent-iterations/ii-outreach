@@ -13,8 +13,8 @@ Handles:
 import asyncio
 from typing import Tuple
 
-from src.runtime.models import ActionResult
-from src.shared.utils import human_type, random_delay, take_error_screenshot
+from src.reddit.runtime.models import ActionResult
+from src.reddit.shared.utils import human_type, random_delay, take_error_screenshot
 
 
 async def _get_full_page_text(page) -> str:

@@ -1,0 +1,109 @@
+{
+  "product": {
+    "name": "Your Product",
+    "url": "https://example.com",
+    "research_url": "",
+    "summary": "One-line description of the product and the job it does.",
+    "target_audience": "Who this product is for.",
+    "voice_notes": "Helpful, concise, low-pressure, specific.",
+    "cta": "If helpful, I can send the link.",
+    "value_props": [
+      "Primary value prop",
+      "Secondary value prop"
+    ],
+    "competitors": [
+      "Competitor A",
+      "Competitor B"
+    ]
+  },
+  "accounts": [
+    {
+      "username": "your_reddit_username",
+      "password": "your_reddit_password",
+      "can_dm": true,
+      "can_comment": true,
+      "mode": "mixed",
+      "cookies_path": "auth/cookies_your_reddit_username.json"
+    }
+  ],
+  "ramp_schedule": {
+    "days_1_to_3": {
+      "max_dms": 5,
+      "max_comments": 10
+    },
+    "days_4_to_7": {
+      "max_dms": 8,
+      "max_comments": 15
+    },
+    "days_8_plus": {
+      "max_dms": 10,
+      "max_comments": 25
+    }
+  },
+  "search": {
+    "subreddits_priority": [
+      "subreddit1",
+      "subreddit2"
+    ],
+    "search_type": "mixed",
+    "post_ratio": 0.5,
+    "sort": "new",
+    "time_filter": "month",
+    "max_leads_per_keyword": 50,
+    "max_post_age_days": 180
+  },
+  "delays": {
+    "between_dms_min_seconds": 720,
+    "between_dms_max_seconds": 1080,
+    "between_actions_min_seconds": 180,
+    "between_actions_max_seconds": 480,
+    "between_searches_min_seconds": 30,
+    "between_searches_max_seconds": 90,
+    "page_load_wait_seconds": 3,
+    "typing_delay_min_ms": 50,
+    "typing_delay_max_ms": 150,
+    "click_delay_min_seconds": 1,
+    "click_delay_max_seconds": 3
+  },
+  "strategies": {
+    "competitor_alternative": {
+      "enabled": true,
+      "keywords": [
+        "competitor a alternative",
+        "better than competitor b",
+        "looking for a competitor a replacement"
+      ],
+      "allowed_actions": [
+        "dm",
+        "comment"
+      ],
+      "templates_key": "competitor_alternative",
+      "prompt_file": "guidance/competitor_alternative.md"
+    },
+    "problem_aware": {
+      "enabled": true,
+      "keywords": [
+        "tool for pain point",
+        "how do you solve pain point",
+        "struggling with pain point"
+      ],
+      "allowed_actions": [
+        "comment"
+      ],
+      "templates_key": "problem_aware",
+      "prompt_file": "guidance/problem_aware.md"
+    }
+  },
+  "decision_engine": {
+    "mode": "operator"
+  },
+  "grok": {
+    "model": "grok-4",
+    "base_url": "https://api.x.ai/v1",
+    "temperature": 0.3,
+    "max_tokens": 16384,
+    "max_leads_per_batch": 50,
+    "max_retries": 2
+  },
+  "max_consecutive_failures": 3
+}

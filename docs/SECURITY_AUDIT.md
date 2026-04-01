@@ -72,4 +72,4 @@ Guidance:
 ## Residual Concerns
 
 - The runtime still supports config-based passwords inside gitignored project files. That is acceptable for local operation, but `.env` remains the safer default.
-- Browser automation sessions are powerful. Anyone with access to a project's `data/` directories can likely act as that operator until the session expires.
+- Browser automation sessions are powerful. Anyone with access to a project's `auth/` directories can likely act as that operator until the session expires.

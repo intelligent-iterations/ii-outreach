@@ -8,7 +8,7 @@ through `zendriver` and the main outreach runtime.
 
 _BROWSER_ONLY_MESSAGE = (
     "Reddit API tooling has been removed. Use the browser automation workflow "
-    "(`python -m src.main`, `python -m src.dry_run`, or `python -m src.setup_auth`) "
+    "(`python -m src.reddit.main`, `python -m src.reddit.dry_run`, or `python -m src.reddit.setup_auth`) "
     "with zendriver instead."
 )
 

@@ -1,85 +1,140 @@
 # Outreach Agent Rules
 
-This repo is meant to be configured and operated by an agent from a user's product brief.
+This repo is a reusable outreach engine. Live project state belongs under gitignored `projects/<slug>/`, not in tracked root files.
 
-## Repo Structure
+## Canonical Repo Shape
 
-- Repo root contains the shared engine, starter prompts, and starter config examples.
-- Per-user and per-project runtime state belongs under gitignored `projects/<slug>/`.
-- If a user has not chosen a slug yet, the agent should create one from the product name.
-- The active project root should be treated as `projects/<slug>/`.
-- Use `OUTREACH_PROJECT_DIR=/abs/path/to/projects/<slug>` when running onboarding, dry runs, safe-mode runs, or the review UI.
+- Shared code lives under `src/`
+  - Reddit implementation: `src/reddit/`
+  - X implementation: `src/x/`
+- Starter assets live under `starter-assets/`
+- Python dependency lists live under `requirements/`
+- Per-project runtime state lives under `projects/<slug>/`
+
+## Canonical Project Shape
+
+Treat `OUTREACH_PROJECT_DIR=/abs/path/to/projects/<slug>` as the active project root.
+
+Create or maintain this layout:
+
+```text
+projects/<slug>/
+  workspace/
+    PRODUCT_PROFILE.md
+    VOICE_EXAMPLES.md
+  research/
+  reddit/
+    .env
+    config.json
+    templates.json
+    guidance/
+    auth/
+    output/
+      actions/
+        by_status/
+        by_run/
+      logs/
+    tracking/
+  x/
+    .env
+    config.json
+    auth/
+    output/
+      actions/
+        by_status/
+        by_run/
+      logs/
+    tracking/
+```
+
+Use clear folder names:
+
+- `guidance/` instead of `prompts/`
+- `auth/` instead of `data/` for cookies and login artifacts
+- `tracking/` for state files
+- `output/actions/` for staged intent
+- `output/logs/` for screenshots and run logs
+
+Do not introduce new vague folders like `data/`, `review_batches/`, or `intended_actions/`.
 
 ## Primary Goal
 
-Turn plain-English product context into:
+Turn a product brief into:
 
-- search keywords
-- strategy buckets
-- outreach templates
-- prompt guidance
-- Reddit config
-- optional X config
+- saved product context
+- saved tone and moderation assumptions
+- reusable Reddit and optional X config
+- reusable templates and guidance
 - local auth setup
-- staged intended actions for review before posting
+- reviewable staged actions
 
-The operator should be the primary brain for project setup:
+The operator is the primary brain:
 
 - write the templates
-- write the prompt guidance
-- save tone and moderation assumptions in project state
-- prefer local, template-driven discovery and reply adaptation by default
-- only use Grok as an optional external scorer if the user explicitly wants that mode
+- write the guidance
+- save decisions in project state
+- prefer local/operator logic by default
+- use Grok only if the active project explicitly enables it
 
 ## Required Workflow
 
 When a user describes a product:
 
-1. Create or select a project folder under `projects/<slug>/` with this structure:
-   - `workspace/`
-   - `prompts/`
-   - `data/`
-   - `output/`
-   - `tracking/`
-   - `x-outreach/data/`
-2. Update `projects/<slug>/workspace/PRODUCT_PROFILE.md` with:
-   - product name
-   - one-line summary
-   - target audience
-   - main pain points
-   - value props
-   - competitors or substitutes
-   - CTA style
-3. Update `projects/<slug>/workspace/VOICE_EXAMPLES.md` if the user gives tone examples.
-4. Research existing Reddit posts and comments in the relevant niche before writing templates. Save the resulting tone assumptions in project state, not just chat.
-5. Check likely target subreddit rules or moderation norms when the workflow could trip self-promo filters.
+1. Create or select `projects/<slug>/`.
+2. Save product context in `projects/<slug>/workspace/PRODUCT_PROFILE.md`.
+3. Save tone examples in `projects/<slug>/workspace/VOICE_EXAMPLES.md` when provided.
+4. Research the niche before writing templates. Save useful findings under `projects/<slug>/research/`.
+5. Check subreddit rules or moderation norms when self-promo risk is real.
 6. Translate that profile into:
-   - `projects/<slug>/config.json`
-   - `projects/<slug>/templates.json`
-   - `projects/<slug>/prompts/base_system.txt`
-   - `projects/<slug>/prompts/triage_v2.txt`
-   - `projects/<slug>/prompts/discovery.txt`
-   - optional X config in `projects/<slug>/x-outreach/config.json`
-7. If the user shares Reddit/X credentials in chat, move them into local ignored project files before running auth:
-   - `projects/<slug>/.env`
-   - `projects/<slug>/x-outreach/.env`
-8. Run onboarding locally with:
-   - `OUTREACH_PROJECT_DIR=/abs/path/to/projects/<slug> python -m src.setup_auth`
-   - `cd x-outreach && OUTREACH_PROJECT_DIR=/abs/path/to/projects/<slug> python -m src.setup_auth`
-9. Treat dependency installation as part of onboarding. The onboarding commands should bootstrap their own Python deps before auth.
-10. Save fresh cookies/session state under the active project:
-   - `projects/<slug>/data/`
-   - `projects/<slug>/x-outreach/data/`
-11. For posting flows, prefer staging intended actions into `projects/<slug>/output/intended_actions/` rather than posting immediately.
-12. Treat the review UI as part of the product surface, not a debugging tool.
+   - `projects/<slug>/reddit/config.json`
+   - `projects/<slug>/reddit/templates.json`
+   - `projects/<slug>/reddit/guidance/base_system.md`
+   - `projects/<slug>/reddit/guidance/triage_v2.md`
+   - `projects/<slug>/reddit/guidance/discovery.md`
+   - optional `projects/<slug>/x/config.json`
+7. If the user shares credentials in chat, move them into local ignored files before auth:
+   - `projects/<slug>/reddit/.env`
+   - `projects/<slug>/x/.env`
+8. Run onboarding locally:
+   - `OUTREACH_PROJECT_DIR=/abs/path/to/projects/<slug> python -m src.reddit.setup_auth`
+   - `OUTREACH_PROJECT_DIR=/abs/path/to/projects/<slug> python -m src.x.setup_auth`
+9. Treat dependency installation as part of onboarding. Setup commands should bootstrap their own requirements.
+10. Save fresh cookies under:
+   - `projects/<slug>/reddit/auth/`
+   - `projects/<slug>/x/auth/`
+11. Save runtime state under:
+   - `projects/<slug>/reddit/tracking/`
+   - `projects/<slug>/x/tracking/`
+12. Stage reviewable actions under:
+   - `projects/<slug>/reddit/output/actions/`
+   - `projects/<slug>/x/output/actions/`
+13. Use the canonical action layout:
+   - `by_status/pending_review/`
+   - `by_status/approved/`
+   - `by_status/rejected/`
+   - `by_status/dispatching/`
+   - `by_status/dispatched/`
+   - `by_status/failed/`
+   - `by_status/scheduled/` for Reddit
+   - `by_run/<run-id>/manifest.json`
+14. Prefer CLI inspection before manual folder spelunking:
+   - `python -m src.reddit.actions summary`
+   - `python -m src.reddit.actions list --status approved`
+   - `python -m src.reddit.actions show-run <run-id>`
+   - `python -m src.x.actions summary`
+15. Safe mode is the default. Stage first, then approve, then dispatch.
 
 ## Starter Assets
 
-- Starter config lives at repo root in `config.example.json` and `x-outreach/config.example.json`.
-- Starter prompts live at repo root in `prompts/`.
-- Starter templates live at repo root in `templates.json`.
-- Agents should copy starter assets into the active project folder before tailoring them.
-- Do not save an individual contributor's live project setup back into the tracked repo root.
+- Reddit starter assets:
+  - `starter-assets/reddit/config.example.json`
+  - `starter-assets/reddit/templates.example.json`
+  - `starter-assets/reddit/guidance/`
+- X starter assets:
+  - `starter-assets/x/config.example.json`
+  - `starter-assets/x/.env.example`
+
+Copy starter assets into the active project and tailor them there. Do not write live project state back into tracked starter files.
 
 ## Messaging Standards
 
@@ -87,8 +142,8 @@ When a user describes a product:
 - Default to soft CTAs.
 - Avoid hype and invented claims.
 - Keep templates reusable and placeholder-driven.
-- Match the product's actual voice instead of generic startup copy.
-- If the user is promoting their own open-source repo, default to honest maintainer disclosure instead of fake neutrality.
+- Match the product's actual voice.
+- If the product is the user's own open-source repo, default to honest maintainer disclosure.
 
 ## Keyword Standards
 
@@ -103,14 +158,13 @@ Prefer:
 
 Avoid:
 
-- spammy broad keywords with no purchase or problem intent
-- vague vanity phrases that do not map to a realistic thread
+- spammy broad keywords with no problem intent
+- vanity phrases that do not map to realistic threads
 
 ## Safety
 
 - Never keep real cookies, screenshots, logs, or account state in the tracked repo root.
 - Never leave real passwords in tracked config.
-- Never rely on copied cookies from another repo, machine, or account.
-- If you duplicate a runtime repo into this one, sanitize it first.
-- Safe mode should be the default execution path unless the user explicitly asks for direct posting.
-- If credentials are provided in chat, the agent may use them to populate local ignored files and complete onboarding.
+- Never reuse cookies from another machine or another repo.
+- Safe mode should be the default unless the user explicitly asks for direct posting.
+- If credentials are provided in chat, the agent may place them into ignored local files and complete onboarding.

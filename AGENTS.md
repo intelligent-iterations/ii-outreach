@@ -75,6 +75,26 @@ The operator is the primary brain:
 - save decisions in project state
 - prefer local/operator logic by default
 - use Grok only if the active project explicitly enables it
+- personally decide approval vs rejection on drafted actions
+- personally revise weak wording before anything is queued for posting
+
+Local discovery and drafting can help generate candidates, but they do not have final approval authority. Final approval comes from the operator agent.
+
+## Agent Approval Loop
+
+The required posting workflow for the agent is:
+
+1. Find at least 20 candidate leads for the active platform.
+2. Review them one by one using the agent's own judgment.
+3. Reject anything irrelevant, generic, weak, tone-mismatched, or low-context.
+4. Reconsider and rewrite the wording for anything worth keeping.
+5. Queue only the final operator-approved draft for posting.
+6. Check the queued count.
+7. If there are not yet more than 20 queued actions, go find more leads and repeat the loop.
+
+Do not stop just because 20 raw leads were found. The stopping condition is an actually approved queue of more than 20 actions. If 20 candidates produce only 1 acceptable queued post, the agent must continue searching, reviewing, rewriting, and filtering until the queue target is met.
+
+Do not let coarse local triage, template matching, or first-pass heuristics act as the final approval gate. They may suggest candidates, but the operator agent must make the final keep/reject decision.
 
 ## Required Workflow
 
@@ -122,7 +142,13 @@ When a user describes a product:
    - `python -m src.reddit.actions list --status approved`
    - `python -m src.reddit.actions show-run <run-id>`
    - `python -m src.x.actions summary`
-15. Safe mode is the default. Stage first, then approve, then dispatch.
+15. For lead generation and queue building, use the agent approval loop:
+   - find candidate leads
+   - personally review relevance
+   - rewrite final wording
+   - queue only approved drafts
+   - repeat until the platform has more than 20 queued actions
+16. Safe mode is the default. Stage first, then approve, then dispatch.
 
 ## Starter Assets
 
@@ -144,6 +170,7 @@ Copy starter assets into the active project and tailor them there. Do not write 
 - Keep templates reusable and placeholder-driven.
 - Match the product's actual voice.
 - If the product is the user's own open-source repo, default to honest maintainer disclosure.
+- Before queueing, rewrite drafts so they answer the specific target instead of sounding like reusable boilerplate.
 
 ## Keyword Standards
 

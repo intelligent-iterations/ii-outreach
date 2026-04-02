@@ -215,7 +215,7 @@ def select_and_fill(lead, action_type, templates, config=None):
 
 
 def fill_template_from_decision(decision, strategy_templates: dict) -> str | None:
-    """Fill a template using Grok's chosen template + placeholders."""
+    """Fill a template using the chosen template + placeholders."""
     if decision.custom_message:
         filled = decision.custom_message
         for key, value in decision.placeholders.items():
@@ -232,6 +232,6 @@ def fill_template_from_decision(decision, strategy_templates: dict) -> str | Non
 
 
 def fill_subject_from_decision(decision, strategy_templates: dict) -> str:
-    """Fill a DM subject line using Grok's placeholders."""
+    """Fill a DM subject line using the chosen placeholders."""
     subject_template = strategy_templates.get("dm_subjects", {}).get(decision.template_name, "quick note")
     return render_with_placeholders(subject_template, decision.placeholders)

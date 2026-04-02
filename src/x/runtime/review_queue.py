@@ -23,10 +23,11 @@ ACTIONS_DIR = os.path.join(OUTPUT_DIR, "actions")
 STATUS_DIR = os.path.join(ACTIONS_DIR, "by_status")
 RUNS_DIR = os.path.join(ACTIONS_DIR, "by_run")
 
-ACTIVE_STATUSES = {"pending_review", "approved", "dispatching"}
+ACTIVE_STATUSES = {"pending_review", "approved", "scheduled", "dispatching"}
 KNOWN_STATUSES = (
     "pending_review",
     "approved",
+    "scheduled",
     "rejected",
     "dispatching",
     "dispatched",
@@ -140,6 +141,7 @@ def _refresh_run_manifest(run_id: str | None):
                 "action_type": action.get("action_type"),
                 "username": action.get("username"),
                 "tweet_url": action.get("tweet_url"),
+                "scheduled_for": action.get("scheduled_for"),
                 "artifact_path": os.path.relpath(os.path.realpath(action["_path"]), os.path.realpath(OUTPUT_DIR)),
             }
         )
@@ -239,6 +241,17 @@ def update_action_status(action_id: str, status: str, note: str | None = None) -
     return _persist_action(action, previous_path=previous_path)
 
 
+def update_action(action_id: str, **fields) -> Optional[dict]:
+    action = get_action(action_id)
+    if not action:
+        return None
+    previous_path = action.get("_path")
+    previous_run_id = action.get("run_id")
+    action.update(fields)
+    action["updated_at"] = datetime.now().isoformat()
+    return _persist_action(action, previous_path=previous_path, previous_run_id=previous_run_id)
+
+
 def mark_action_result(action_id: str, status: str, result: dict | None = None, error: str | None = None) -> Optional[dict]:
     action = get_action(action_id)
     if not action:
@@ -251,3 +264,20 @@ def mark_action_result(action_id: str, status: str, result: dict | None = None, 
     if error:
         action["dispatch_error"] = error
     return _persist_action(action, previous_path=previous_path)
+
+
+def list_due_actions(now: datetime | None = None, statuses: Optional[set[str]] = None) -> list[dict]:
+    now = now or datetime.now()
+    due = []
+    for action in list_actions(statuses or {"scheduled"}):
+        scheduled_for = action.get("scheduled_for")
+        if not scheduled_for:
+            continue
+        try:
+            scheduled_dt = datetime.fromisoformat(scheduled_for)
+        except ValueError:
+            continue
+        if scheduled_dt <= now:
+            due.append(action)
+    due.sort(key=lambda item: item.get("scheduled_for", ""))
+    return due

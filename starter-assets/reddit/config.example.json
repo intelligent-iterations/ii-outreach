@@ -94,16 +94,5 @@
       "prompt_file": "guidance/problem_aware.md"
     }
   },
-  "decision_engine": {
-    "mode": "operator"
-  },
-  "grok": {
-    "model": "grok-4",
-    "base_url": "https://api.x.ai/v1",
-    "temperature": 0.3,
-    "max_tokens": 16384,
-    "max_leads_per_batch": 50,
-    "max_retries": 2
-  },
   "max_consecutive_failures": 3
 }

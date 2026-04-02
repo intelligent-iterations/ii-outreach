@@ -475,6 +475,13 @@ async def _reply_to_comment_permalink(
 
         # Note: We only act on "confirmed" leads where keyword was verified in comment text
         # during search, so we trust the permalink navigation
+        if verify_keyword or verify_username:
+            verification = await verify_target_comment(page, verify_keyword or "", verify_username or "")
+            if not verification.get("verified"):
+                print(f"[COMMENT] Target verification failed: {verification.get('reason')}")
+                await take_error_screenshot(page, "reply_target_missing")
+                result = COMMENT_FAILED
+                raise Exception("verification_failed")
 
         # The target comment should be highlighted/focused when using comment permalink
         # Find and click the Reply button for it

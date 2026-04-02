@@ -4,8 +4,8 @@ Dry-run workflow that logs EVERY step without executing any actions.
 Generates an HTML report showing the full decision pipeline:
 1. Search: Keywords used, comments collected
 2. Split: Confirmed vs Maybe pile
-3. Discovery: operator-local or Grok decisions
-4. Triage: operator-local or Grok decisions
+3. Discovery: local heuristics
+4. Drafting/Triage: operator drafts
 5. Final: What would have been posted (but wasn't)
 """
 
@@ -132,11 +132,11 @@ def generate_html_report(data: dict, output_path: Path):
         disc = data['discovery']
         html += f"""
     <div class="section">
-        <h2>Step 3: Discovery Phase (Grok V1)</h2>
+        <h2>Step 3: Discovery Phase</h2>
         <p>Evaluating {disc.get('input_count', 0)} "maybe" leads to find relevant ones.</p>
 
         <div class="step">
-            <h3>Prompt Sent to Grok</h3>
+            <h3>Discovery Guidance</h3>
             <details><summary>View System Prompt</summary>
             <div class="code code-small">{disc.get('system_prompt', 'N/A')}</div>
             </details>
@@ -146,7 +146,7 @@ def generate_html_report(data: dict, output_path: Path):
         </div>
 
         <div class="step {'success' if disc.get('relevant_count', 0) > 0 else 'warning'}">
-            <h3>Grok's Response</h3>
+            <h3>Local Discovery Output</h3>
             <div class="code">{disc.get('raw_response', 'N/A')}</div>
         </div>
 
@@ -192,7 +192,7 @@ def generate_html_report(data: dict, output_path: Path):
         </div>
 
         <div class="step {'success' if tri.get('approved_count', 0) > 0 else 'warning'}">
-            <h3>Grok's Response</h3>
+            <h3>Local Triage Output</h3>
             <div class="code">{tri.get('raw_response', 'N/A')}</div>
         </div>
 
@@ -262,9 +262,6 @@ async def run_dry_run(
     strategy_config = strategies[strategy_name]
     strategy_templates_key = strategy_config.get("templates_key", strategy_name)
     strategy_templates = templates.get(strategy_templates_key, templates.get(strategy_name, {}))
-    grok_config = config.get("grok", {})
-    decision_mode = config.get("decision_engine", {}).get("mode", "operator").strip().lower()
-
     # Use provided keywords or get from config
     strategy_keywords = keywords or strategy_config.get("keywords", [])[:max_keywords]
 
@@ -291,7 +288,7 @@ async def run_dry_run(
     log.header("DRY RUN MODE - LOGGING EVERYTHING")
     log.stat("Strategy", strategy_name)
     log.stat("Keywords", len(strategy_keywords))
-    log.stat("Decision engine", decision_mode)
+    log.stat("Decision engine", "operator-local")
 
     # ═══════════════════════════════════════════════════════════════════
     # STEP 1: SEARCH PHASE
@@ -365,7 +362,7 @@ async def run_dry_run(
 
     if maybe_leads:
         log.subheader("Step 3: Discovery Phase")
-        log.step("🧠" if decision_mode != "grok" else "🤖", f"Running {decision_mode} discovery...")
+        log.step("🧠", "Running operator-local discovery...")
 
     # ═══════════════════════════════════════════════════════════════════
     # STEP 4: TRIAGE PHASE
@@ -385,8 +382,6 @@ async def run_dry_run(
             strategy_config=strategy_config,
             strategy_templates=strategy_templates,
             config=config,
-            grok_config=grok_config,
-            decision_mode=decision_mode,
         )
         all_candidates = triage_result.leads
         if triage_result.discovery_result:

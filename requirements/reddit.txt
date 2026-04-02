@@ -1,3 +1,2 @@
 zendriver
-openai
 python-dotenv

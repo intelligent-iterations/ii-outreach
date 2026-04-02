@@ -149,8 +149,8 @@ class Logger:
         print(f"  {cls.GRAY}{'─' * 60}{cls.RESET}")
 
     @classmethod
-    def grok_response(cls, approved_count, denied_count):
-        """Print Grok triage results."""
+    def triage_response(cls, approved_count, denied_count):
+        """Print triage results."""
         print(f"\n  {cls.GREEN}▸ Approved: {approved_count}{cls.RESET}")
         print(f"  {cls.RED}▸ Denied: {denied_count}{cls.RESET}\n")
 

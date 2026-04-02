@@ -231,7 +231,7 @@ class StrategyType(Enum):
 
 @dataclass
 class TriageDecision:
-    """Grok's decision for a single lead."""
+    """One local triage decision for a single lead."""
     lead_index: int
     username: str
     permalink: str
@@ -240,7 +240,7 @@ class TriageDecision:
     template_variation: int    # index into the template list
     placeholders: dict = field(default_factory=dict)
     reasoning: str = ""
-    custom_message: str = ""   # Grok's customized version of the template
+    custom_message: str = ""   # Locally drafted version of the template
 
     @classmethod
     def from_dict(cls, data: dict) -> "TriageDecision":
@@ -272,7 +272,7 @@ class TriageDecision:
 
 @dataclass
 class DiscoveryResult:
-    """Full discovery result from Grok."""
+    """Full local discovery result."""
     input_leads: list[dict] = field(default_factory=list)
     relevant_leads: list[dict] = field(default_factory=list)
     relevant_decisions: list[dict] = field(default_factory=list)  # With reasons
@@ -301,7 +301,7 @@ class DiscoveryResult:
 
 @dataclass
 class TriageResult:
-    """Full triage result from Grok."""
+    """Full local triage result."""
     approved: list[TriageDecision] = field(default_factory=list)
     denied: list[dict] = field(default_factory=list)
     raw_response: str = ""

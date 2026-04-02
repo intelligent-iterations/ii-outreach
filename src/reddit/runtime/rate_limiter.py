@@ -117,13 +117,26 @@ class RateLimiter:
         """Wait between major actions (comments)."""
         self._action_count_since_long_pause += 1
 
-        # Every 5-7 actions, take a longer break
-        if self._action_count_since_long_pause >= random.randint(5, 7):
-            long_pause = random.uniform(15 * 60, 20 * 60)
-            print(f"[RATE] Taking a long break: {long_pause / 60:.1f} minutes")
-            await asyncio.sleep(long_pause)
-            self._action_count_since_long_pause = 0
-            return long_pause
+        long_pause_min_s = self.delays.get("long_pause_min_seconds", 15 * 60)
+        long_pause_max_s = self.delays.get("long_pause_max_seconds", 20 * 60)
+        long_pause_every_min = self.delays.get("long_pause_every_min_actions", 5)
+        long_pause_every_max = self.delays.get("long_pause_every_max_actions", 7)
+
+        long_pause_enabled = (
+            long_pause_min_s > 0
+            and long_pause_max_s > 0
+            and long_pause_every_min > 0
+            and long_pause_every_max > 0
+        )
+
+        if long_pause_enabled:
+            # Every N actions, take a longer break.
+            if self._action_count_since_long_pause >= random.randint(long_pause_every_min, long_pause_every_max):
+                long_pause = random.uniform(long_pause_min_s, long_pause_max_s)
+                print(f"[RATE] Taking a long break: {long_pause / 60:.1f} minutes")
+                await asyncio.sleep(long_pause)
+                self._action_count_since_long_pause = 0
+                return long_pause
 
         min_s = self.delays["between_actions_min_seconds"]
         max_s = self.delays["between_actions_max_seconds"]

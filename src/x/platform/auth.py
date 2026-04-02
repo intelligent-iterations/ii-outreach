@@ -35,6 +35,11 @@ async def _start_browser(headless=False):
         return await zd.start(ZDConfig(**fallback_kwargs))
 
 
+async def _open_page(browser, url: str, timeout_seconds: float = 30.0):
+    """Open a page with a bounded timeout so navigation cannot hang forever."""
+    return await asyncio.wait_for(browser.get(url), timeout=timeout_seconds)
+
+
 def _resolve_account(account):
     username = os.getenv("X_USERNAME") or account.get("username", "")
     password = os.getenv("X_PASSWORD") or account.get("password", "")
@@ -66,18 +71,18 @@ async def login(config, account, headless=False):
     if os.path.exists(cookies_path):
         log.step("🔑", f"Trying local cookies for @{account['username']}...")
         try:
-            page = await browser.get("https://x.com")
+            page = await _open_page(browser, "https://x.com")
             cookie_format, cookie_count = await load_browser_cookies(browser, cookies_path)
             if cookie_count is None:
                 log.info(f"Loaded {cookie_format} cookies from {cookies_path}")
             else:
                 log.info(f"Loaded {cookie_count} {cookie_format} cookies from {cookies_path}")
-            page = await browser.get("https://x.com/home")
-            await asyncio.sleep(config["delays"]["page_load_wait_seconds"])
-
-            if await _is_logged_in(page, account):
-                log.success(f"Cookie login successful for @{account['username']}!")
-                return browser, page
+            for attempt in range(3):
+                page = await _open_page(browser, "https://x.com/home")
+                await asyncio.sleep(config["delays"]["page_load_wait_seconds"] + attempt)
+                if await _is_logged_in(page, account):
+                    log.success(f"Cookie login successful for @{account['username']}!")
+                    return browser, page
             else:
                 log.warning("Local cookies expired, trying fresh login...")
         except Exception as e:
@@ -132,7 +137,7 @@ async def _is_logged_in(page, account):
 async def _do_login(browser, config, account):
     """Perform fresh login with username/password."""
     log.step("🔐", f"Logging in as @{account['username']}...")
-    page = await browser.get("https://x.com/i/flow/login")
+    page = await _open_page(browser, "https://x.com/i/flow/login")
     await asyncio.sleep(config["delays"]["page_load_wait_seconds"])
 
     username = account["username"]

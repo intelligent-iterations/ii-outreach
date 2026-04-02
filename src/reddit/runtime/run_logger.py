@@ -4,7 +4,7 @@ Per-run data logging for debugging and auditing.
 Each bot run gets a timestamped folder under output/runs/ containing:
 - meta.json: run configuration and timing
 - raw_leads_{strategy}.json: all scraped leads before triage
-- triage_{strategy}.json: Grok's full response + parsed decisions
+- triage_{strategy}.json: local triage output + parsed decisions
 - actions.json: actual actions taken and their results
 - errors.json: any errors during the run
 """

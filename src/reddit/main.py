@@ -5,7 +5,7 @@ Coordinates:
 - Loading configuration
 - Running sessions for each account sequentially
 - Searching for leads per strategy
-- Triaging leads via operator-local logic or Grok (or falling back to keyword matching)
+- Drafting review candidates via operator templates
 - Posting comments and sending DMs
 - Rate limiting and state management
 - Per-run data logging
@@ -33,7 +33,7 @@ from src.reddit.runtime.state import (
     get_stats,
 )
 from src.reddit.decision.templates import select_and_fill, fill_template_from_decision, fill_subject_from_decision
-from src.reddit.decision.triage import triage_leads, full_triage_workflow
+from src.reddit.decision.triage import full_triage_workflow
 from src.reddit.shared.utils import load_config, load_templates, take_error_screenshot, BASE_DIR, log
 from src.reddit.runtime.review_queue import (
     stage_action,
@@ -44,6 +44,11 @@ from src.reddit.runtime.review_queue import (
     mark_action_result,
     update_action,
 )
+def _effective_safe_mode(safe_mode: bool, no_triage: bool) -> tuple[bool, str | None]:
+    """Operator triage may draft candidates, but it must not auto-post them."""
+    if not no_triage and not safe_mode:
+        return True, "Operator mode is draft-only; forcing review staging instead of direct posting."
+    return safe_mode, None
 
 
 def deduplicate_leads(leads: list[dict]) -> list[dict]:
@@ -208,7 +213,7 @@ async def handle_comment(
     """
     Handle comment logic for a single lead.
 
-    If filled_message is provided (from Grok triage), use it directly.
+    If filled_message is provided (from operator triage), use it directly.
     Otherwise fall back to keyword-based template selection.
 
     Returns: (new_page, success: bool)
@@ -237,7 +242,7 @@ async def handle_comment(
     if dry_run:
         print(f"\n[DRY RUN] Would comment on {permalink}:")
         print(f"  Account: {account_name}")
-        print(f"  Archetype: {archetype or 'grok-selected'}")
+        print(f"  Archetype: {archetype or 'operator-selected'}")
         print(f"  Body: {filled_comment[:200]}...")
         # Still claim to prevent other accounts in dry run
         claim_user(username, account_name)
@@ -293,7 +298,7 @@ async def handle_dm(
     """
     Handle DM logic for a single lead.
 
-    If filled_message is provided (from Grok triage), use it directly.
+    If filled_message is provided (from operator triage), use it directly.
     Otherwise fall back to keyword-based template selection.
 
     Returns: (new_page, result: ActionResult)
@@ -314,7 +319,7 @@ async def handle_dm(
         print(f"\n[DRY RUN] Would DM u/{username}:")
         print(f"  Account: {account_name}")
         print(f"  Subject: {subject}")
-        print(f"  Archetype: {archetype or 'grok-selected'}")
+        print(f"  Archetype: {archetype or 'operator-selected'}")
         print(f"  Body: {filled_dm[:200]}...")
         record_action(
             username=username,
@@ -531,9 +536,6 @@ async def run_strategy_with_triage(
     acct_name = account["username"]
     strategy_keywords = list(keywords_override or strategy_config["keywords"])
     allowed_actions = strategy_config.get("allowed_actions", ["comment"])
-    grok_config = config.get("grok", {})
-    decision_mode = config.get("decision_engine", {}).get("mode", "operator").strip().lower()
-
     total_dms_sent = 0
     total_comments_posted = 0
     consecutive_failures = 0
@@ -611,10 +613,7 @@ async def run_strategy_with_triage(
         run_logger.save_raw_leads(cycle_leads, f"{strategy_name}_cycle{cycle}")
 
         # ── TRIAGE PHASE ──
-        if decision_mode == "grok":
-            log.step("🤖", "Triaging leads with Grok...")
-        else:
-            log.step("🧠", "Triaging leads with operator-local logic...")
+        log.step("🧠", "Drafting review candidates with operator logic...")
 
         confirmed_leads, maybe_leads = split_leads_by_keyword_confirmation(cycle_leads)
         log.stat("Confirmed", len(confirmed_leads), log.GREEN)
@@ -626,24 +625,22 @@ async def run_strategy_with_triage(
             strategy_config=strategy_config,
             strategy_templates=strategy_templates,
             config=config,
-            grok_config=grok_config,
-            decision_mode=decision_mode,
         )
         run_logger.save_triage_result(triage_result, f"{strategy_name}_cycle{cycle}")
         # Also save discovery result separately for easy debugging
         if triage_result.discovery_result:
             run_logger.save_discovery_result(triage_result.discovery_result, f"{strategy_name}_cycle{cycle}")
 
-        log.grok_response(len(triage_result.approved), len(triage_result.denied))
+        log.triage_response(len(triage_result.approved), len(triage_result.denied))
 
         if not triage_result.approved:
-            log.warning("No leads approved this cycle, continuing...")
+            log.warning("No candidate drafts generated this cycle, continuing...")
             continue
 
-        log.success(f"{len(triage_result.approved)} leads approved for engagement")
+        log.success(f"{len(triage_result.approved)} candidate drafts generated for review")
 
         # ── EXECUTE PHASE ──
-        log.step("🚀", "Executing approved actions...")
+        log.step("📝", "Staging drafted actions for explicit review...")
 
         for action_idx, decision in enumerate(triage_result.approved):
             # Check quota before each action
@@ -673,7 +670,7 @@ async def run_strategy_with_triage(
                 if len(parts) > 1:
                     post_id = parts[1].split('/')[0]
 
-            # Fill template from Grok's decision
+            # Fill template from the operator draft decision
             filled_message = fill_template_from_decision(decision, strategy_templates)
             if not filled_message:
                 log.error(f"Failed to fill template for u/{username}")
@@ -730,7 +727,7 @@ async def run_strategy_with_triage(
                         permalink=permalink,
                         strategy=strategy_name,
                     )
-                    log.success(f"Comment staged for review: {staged['id']}")
+                    log.success(f"Comment draft staged for review: {staged['id']}")
                     total_comments_posted += 1
                     continue
 
@@ -823,7 +820,7 @@ async def run_strategy_with_triage(
                         permalink=permalink,
                         strategy=strategy_name,
                     )
-                    log.success(f"DM staged for review: {staged['id']}")
+                    log.success(f"DM draft staged for review: {staged['id']}")
                     total_dms_sent += 1
                     continue
 
@@ -1162,7 +1159,7 @@ async def run(
     config = load_config()
     templates = load_templates()
     accounts = config["accounts"]
-    decision_mode = config.get("decision_engine", {}).get("mode", "operator").strip().lower()
+    safe_mode, safe_mode_note = _effective_safe_mode(safe_mode, no_triage)
 
     # Filter to specific account if requested
     if only_account:
@@ -1185,7 +1182,7 @@ async def run(
     )
 
     mode_label = "DRY RUN" if dry_run else ("SAFE MODE" if safe_mode else "LIVE")
-    triage_label = "NO TRIAGE" if no_triage else ("GROK V2 TRIAGE" if decision_mode == "grok" else "OPERATOR LOCAL TRIAGE")
+    triage_label = "NO TRIAGE" if no_triage else "OPERATOR DRAFT REVIEW"
 
     # Beautiful startup banner
     log.header("🤖 REDDIT OUTREACH BOT")
@@ -1193,6 +1190,8 @@ async def run(
     log.stat("Triage", triage_label, log.CYAN)
     log.stat("Accounts", len(accounts))
     log.stat("Strategies", ", ".join(strategy_names))
+    if safe_mode_note:
+        log.warning(safe_mode_note)
     print()
 
     for i, account in enumerate(accounts):
@@ -1251,7 +1250,7 @@ def main():
     parser.add_argument("--strategy", type=str, default=None,
                         help="Run only this strategy (e.g. competitor_alternative, problem_aware)")
     parser.add_argument("--no-triage", action="store_true",
-                        help="Skip Grok triage, use keyword-based archetype detection")
+                        help="Skip operator drafting triage and use keyword-based archetype detection")
     parser.add_argument("--migrate", action="store_true",
                         help="Migrate from old format to new state.json")
     parser.add_argument("--stats", action="store_true",

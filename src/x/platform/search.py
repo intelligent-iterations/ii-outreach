@@ -123,8 +123,8 @@ def _parse_tweets(html, keyword, seen_ids):
             time_match = re.search(r'<time[^>]*datetime="([^"]+)"', block)
             timestamp = time_match.group(1) if time_match else None
 
-            # Check if keyword is actually in the text (case insensitive)
-            keyword_confirmed = keyword.lower() in text.lower()
+            # Check whether the query meaningfully matches the tweet text.
+            keyword_confirmed = _keyword_matches_text(keyword, text)
 
             post = {
                 "tweet_id": tweet_id,
@@ -162,6 +162,34 @@ def _clean_html(text):
     # Clean up whitespace
     text = re.sub(r'\s+', ' ', text).strip()
     return text
+
+
+def _normalize_tokens(text):
+    return re.findall(r"[a-z0-9]+", (text or "").lower())
+
+
+def _keyword_matches_text(keyword, text):
+    keyword_normalized = " ".join(_normalize_tokens(keyword))
+    text_normalized = " ".join(_normalize_tokens(text))
+    if not keyword_normalized or not text_normalized:
+        return False
+
+    if keyword_normalized in text_normalized:
+        return True
+
+    keyword_tokens = _normalize_tokens(keyword)
+    text_tokens = set(_normalize_tokens(text))
+    if not keyword_tokens:
+        return False
+
+    if len(keyword_tokens) == 1:
+        return keyword_tokens[0] in text_tokens
+
+    overlap = sum(1 for token in keyword_tokens if token in text_tokens)
+    if overlap == len(keyword_tokens):
+        return True
+
+    return overlap >= 2 and len(keyword_tokens) >= 2
 
 
 def _extract_metric(html_block, metric_type):

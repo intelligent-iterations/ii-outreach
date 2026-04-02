@@ -45,16 +45,19 @@ class ActionsCliTests(unittest.TestCase):
             },
         )
         queue.update_action_status(staged["id"], "approved")
+        queue.update_action(staged["id"], status="scheduled", scheduled_for="2026-04-02T10:30:00")
 
         summary = cli.format_summary()
         run_view = cli.format_run("run-cli-x-1")
-        listing = cli.format_actions(statuses={"approved"}, limit=10)
+        listing = cli.format_actions(statuses={"scheduled"}, limit=10)
 
-        self.assertIn("approved", summary)
+        self.assertIn("scheduled", summary)
         self.assertIn("run-cli-x-1", run_view)
         self.assertIn("artifact:", run_view)
+        self.assertIn("scheduled:", run_view)
         self.assertIn("Showing 1 action(s):", listing)
         self.assertIn("target_user", listing)
+        self.assertIn("2026-04-02T10:30:00", listing)
 
 
 if __name__ == "__main__":

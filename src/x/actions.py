@@ -10,6 +10,7 @@ from src.x.runtime.review_queue import ACTIONS_DIR, RUNS_DIR, list_actions
 DEFAULT_STATUSES = [
     "pending_review",
     "approved",
+    "scheduled",
     "dispatching",
     "dispatched",
     "failed",
@@ -106,6 +107,7 @@ def format_actions(
                 f"  run: {action.get('run_id', '-')}",
                 f"  path: {artifact_path or '-'}",
                 f"  tweet: {tweet_url or '-'}",
+                f"  scheduled: {action.get('scheduled_for', '-')}",
                 f"  message: {(action.get('message', '') or '').replace(chr(10), ' ')[:160]}",
                 "",
             ]
@@ -140,6 +142,8 @@ def format_run(run_id: str) -> str:
         )
         lines.append(f"    artifact: {action.get('artifact_path', '-')}")
         lines.append(f"    tweet: {action.get('tweet_url', '-')}")
+        if action.get("scheduled_for"):
+            lines.append(f"    scheduled: {action.get('scheduled_for')}")
     return "\n".join(lines)
 
 

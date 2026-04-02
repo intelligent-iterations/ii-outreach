@@ -34,7 +34,7 @@ Use clear names:
 - Save tone examples in `workspace/VOICE_EXAMPLES.md` when available.
 - Research the niche before finalizing templates or keyword buckets.
 - Prefer operator-authored strategy and templates by default.
-- Only use Grok when the active Reddit config explicitly enables it.
+- Use local/operator judgment only. Do not depend on Grok or other external decision engines.
 - Safe mode is the default on both platforms.
 - Stage actions before posting:
   - Reddit: `projects/<slug>/reddit/output/actions/`
@@ -42,6 +42,15 @@ Use clear names:
 - Use the CLI before manual browsing:
   - `python -m src.reddit.actions ...`
   - `python -m src.x.actions ...`
+
+## Agent Approval Loop
+
+- Find at least 20 candidate leads for the active platform.
+- Review them one by one using the agent's own judgment.
+- Reject anything irrelevant, generic, weak, tone-mismatched, or low-context.
+- Reconsider and rewrite the wording for anything worth keeping.
+- Queue only the final approved draft for posting.
+- If there are not yet more than 20 queued actions, keep searching and repeat the loop.
 
 ## Runtime Commands
 

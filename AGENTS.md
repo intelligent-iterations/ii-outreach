@@ -74,7 +74,6 @@ The operator is the primary brain:
 - write the guidance
 - save decisions in project state
 - prefer local/operator logic by default
-- use Grok only if the active project explicitly enables it
 - personally decide approval vs rejection on drafted actions
 - personally revise weak wording before anything is queued for posting
 

@@ -33,6 +33,10 @@ ii-outreach is an open-source, agent-first outreach engine for Codex and Claude 
 
 Outreach keeps the tracked repo reusable and pushes live operator state into gitignored `projects/<slug>/`.
 
+Internal CI and scheduled execution should run through Fleet-managed
+self-hosted capacity. Do not add queue-runner profiles, direct host labels, or
+persistent host runners for this package.
+
 The repo now has a symmetric platform model:
 
 - Reddit code lives under `src/reddit/`

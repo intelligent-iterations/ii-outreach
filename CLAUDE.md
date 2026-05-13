@@ -10,6 +10,10 @@ The runtime contract is now symmetric:
 - X project files live under `projects/<slug>/x/`
 - Shared product context lives under `projects/<slug>/workspace/` and `projects/<slug>/research/`
 
+CI and scheduled execution must use Fleet-managed self-hosted capacity. Do not
+add queue-runner profiles, direct host labels, launchd jobs, or persistent host
+runners for this package.
+
 ## Source Of Truth
 
 Save durable state in the repo, not only in chat:

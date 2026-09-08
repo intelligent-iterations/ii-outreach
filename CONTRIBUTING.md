@@ -1,33 +1,24 @@
 # Contributing
 
-Thanks for contributing to `ii-outreach`.
+Create a branch from the latest `main`. Describe the behavior being changed
+and include a small reproduction or test that exercises it.
 
-## Before Opening A PR
-
-1. Read [README.md](./README.md), [AGENTS.md](./AGENTS.md), and [projects/README.md](./projects/README.md).
-2. Keep the tracked repo generic. Do not commit live project state from `projects/<slug>/`.
-3. Preserve the review-first model. New posting flows should stage actions before dispatch.
-4. Update docs when you change the repo contract or project layout.
-
-## Development
+Use Node.js 22 or later. From the package root, run:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements/reddit.txt
-pip install -r requirements/x.txt
+npm ci
+npm run check
+npm test
+node examples/quick-start.mjs
 ```
 
-Run tests:
+Tests use supplied snapshots, explicit clocks, and generic examples. They must
+not contact live accounts, run models, send messages, or read real credentials.
+Use uniquely owned temporary directories and remove only test-owned data.
 
-```bash
-./.venv/bin/python -m unittest tests.test_actions_cli tests.test_review_queue tests.test_project_paths tests.test_browser_cookies tests.x.test_actions_cli tests.x.test_main tests.x.test_project_paths tests.x.test_search tests.x.test_browser_cookies
-```
+Keep networking, persistence, credentials, UI, and recurring jobs in host
+adapters. Changes to the capability contract must update its generated source
+with `npm run generate` and include behavior tests.
 
-## Pull Request Expectations
-
-- Keep changes focused.
-- Prefer explicit naming over “misc” or “data”-style folders.
-- Do not reintroduce legacy paths like `x-outreach/`, `prompts/`, `data/`, or `output/intended_actions/`.
-- Add or update tests when behavior changes.
-- Include doc updates for user-facing or operator-facing changes.
+By contributing, you agree that your contribution is licensed under the
+project's [MIT license](LICENSE).

@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "ii-outreach.framework.v1",
+  "operationKinds": [
+    "generate_campaign_materials",
+    "find_subreddits",
+    "find_promo_leads",
+    "find_community_leads",
+    "find_participants",
+    "find_and_draft_participants",
+    "draft_participant_messages"
+  ],
+  "setup": {
+    "jobTypes": [
+      "find_leads",
+      "draft_messages",
+      "send_messages"
+    ],
+    "draftModes": [
+      "exact",
+      "adapt",
+      "new"
+    ],
+    "maxAccounts": 3,
+    "maxExampleMessages": 100,
+    "maxCommunities": 100,
+    "maxKeywords": 50,
+    "maxSourceAgeDays": 90
+  },
+  "participant": {
+    "targetCount": 200,
+    "batchSize": 20,
+    "activityWindowDays": 30,
+    "schedule": {
+      "policyVersion": 2,
+      "messagesPerRollingHour": 4,
+      "minSpacingMinutes": 12,
+      "maxSpacingMinutes": 18,
+      "maxScheduleDays": 30,
+      "timeZone": "America/New_York",
+      "dailyWindowStartHour": 6,
+      "dailyWindowHours": 16
+    },
+    "draft": {
+      "aliasLimit": 100,
+      "maxWordChanges": 3,
+      "maxRankedAliases": 3,
+      "maxCandidates": 200,
+      "maxCommunityWords": 55
+    },
+    "delivery": {
+      "singleMessageMaxWaitMinutes": 330,
+      "batchMaxWaitMinutes": 4320,
+      "messageBatchLimit": 200,
+      "verifiedVia": "reddit_chat_message_readback",
+      "messageStatuses": [
+        "queued_pending_sender",
+        "scheduled",
+        "dispatching",
+        "sent",
+        "failed",
+        "blocked",
+        "cancelled"
+      ]
+    },
+    "responses": {
+      "targetLimit": 200,
+      "defaultBatchSize": 10,
+      "maxBatchSize": 25,
+      "maxPerCheck": 20,
+      "maxStored": 50,
+      "verifiedVia": "reddit_chat_conversation_readback"
+    }
+  },
+  "capabilities": [
+    "outreach_setup",
+    "campaigns",
+    "subreddits",
+    "review_queues",
+    "participant_discovery",
+    "participant_drafting",
+    "participant_scheduling",
+    "participant_delivery",
+    "participant_response_checks",
+    "outreach_network_analytics"
+  ],
+  "adapterCatalogEntryIds": [
+    "reddit-outreach-review",
+    "reddit-participant-discovery",
+    "reddit-participant-pipeline",
+    "reddit-participant-delivery",
+    "reddit-participant-drafts"
+  ],
+  "capabilityEntrypoints": {
+    "outreach_setup": [
+      "createRedditOutreachSetup",
+      "planRedditOutreachJob",
+      "participantDraftAliasesFromSetup"
+    ],
+    "campaigns": [
+      "createRedditDailyEngagementPlan",
+      "createRedditStrategyPlan"
+    ],
+    "subreddits": [
+      "participantSubredditNames"
+    ],
+    "review_queues": [
+      "createRedditApprovalQueue",
+      "approveRedditLead",
+      "denyRedditLead",
+      "applyRedditApprovalDecisions",
+      "planRedditReviewQueueDedup"
+    ],
+    "participant_discovery": [
+      "createParticipantDiscoveryState",
+      "mergeParticipantDiscoveryBatch",
+      "pauseParticipantDiscovery",
+      "resumeParticipantDiscovery",
+      "reuseExistingParticipantQualifications",
+      "validateExistingParticipantQualification"
+    ],
+    "participant_drafting": [
+      "buildParticipantDraftAgentInput",
+      "buildParticipantDraftPrompt",
+      "participantDraftOutputSchema",
+      "materializeParticipantDraftBatch"
+    ],
+    "participant_scheduling": [
+      "allocateParticipantMessageSlot",
+      "queueParticipantMessage",
+      "isParticipantMessageBatchScheduleCurrent"
+    ],
+    "participant_delivery": [
+      "validateParticipantMessageBatch",
+      "beginParticipantMessageDispatch",
+      "completeParticipantMessageDispatch",
+      "failParticipantMessageDispatch",
+      "cancelParticipantMessage"
+    ],
+    "participant_response_checks": [
+      "normalizeParticipantResponseTargets",
+      "participantResponseTargetBatches",
+      "participantResponseCheckEvent",
+      "participantStoredResponseCounts"
+    ],
+    "outreach_network_analytics": [
+      "participantOutboundMessageStats",
+      "participantStoredResponseCounts"
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "ii-outreach",
+  "version": "0.1.0-alpha",
+  "private": true,
+  "description": "Stateless, provider-neutral outreach framework",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./contract": "./contracts/outreach-framework.v1.json"
+  },
+  "bin": {
+    "ii-outreach": "dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "check": "node scripts/generate-framework-contract.mjs --check && tsc --noEmit",
+    "generate": "node scripts/generate-framework-contract.mjs",
+    "start": "tsx src/cli.ts",
+    "test": "npm run build && node scripts/check-package-entrypoint.mjs && node --max-old-space-size=4096 scripts/run-node-tests.mjs test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [
+    "outreach",
+    "framework",
+    "stateless",
+    "reddit",
+    "scheduling",
+    "engagement"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/intelligent-iterations/ii-outreach.git"
+  },
+  "homepage": "https://github.com/intelligent-iterations/ii-outreach#readme",
+  "bugs": {
+    "url": "https://github.com/intelligent-iterations/ii-outreach/issues"
+  },
+  "files": [
+    "dist/src/",
+    "contracts/",
+    "prompts/",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ]
+}

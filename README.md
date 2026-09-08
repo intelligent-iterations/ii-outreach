@@ -1,213 +1,268 @@
-<h1 align="center">ii-outreach</h1>
+# ii-outreach
 
-<p align="center">
-  Agent-first Reddit and X outreach scaffolding.<br/>
-  Turn a product brief into saved guidance, auth, and reviewable action queues.
-</p>
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/intelligent-iterations/ii-outreach/badge)](https://scorecard.dev/viewer/?uri=github.com/intelligent-iterations/ii-outreach)
 
-<p align="center">
-  <a href="https://github.com/intelligent-iterations/ii-outreach/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
-  <a href="https://github.com/intelligent-iterations/ii-outreach/actions/workflows/ci.yml"><img src="https://github.com/intelligent-iterations/ii-outreach/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://discord.gg/G7Qnnhy"><img src="https://img.shields.io/badge/discord-join-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://github.com/intelligent-iterations/ii-outreach/issues"><img src="https://img.shields.io/badge/issues-welcome-brightgreen.svg" alt="Issues welcome"></a>
-  <a href="https://github.com/intelligent-iterations/ii-outreach/discussions"><img src="https://img.shields.io/badge/discussions-enabled-black.svg" alt="Discussions"></a>
-</p>
+An MIT-licensed library by Intelligent Iterations.
 
-ii-outreach is an open-source, agent-first outreach engine for Codex and Claude Code. It turns a product brief into reusable Reddit and X strategy, project-scoped auth, and review-first action queues instead of one-off scripts or prompt dumps.
+`ii-outreach` gives an application the rules and state transitions needed to
+run Reddit outreach.
 
-<p align="center">
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#commands">Commands</a> •
-  <a href="#community">Community</a> •
-  <a href="./CONTRIBUTING.md">Contributing</a>
-</p>
+It can qualify leads, prepare message drafts, schedule approved messages,
+record delivery results, check replies, and calculate outreach statistics.
 
-## What You Get
+## What it can do
 
-- A symmetric Reddit + X codebase that agents can navigate quickly
-- Gitignored per-project runtime state under `projects/<slug>/`
-- Review-first action queues instead of direct-post-by-default automation
-- Starter assets and guidance that can be copied into new projects cleanly
+| Job | What `ii-outreach` does | What your application does |
+| --- | --- | --- |
+| Find leads | Validates, filters, and deduplicates candidates using your lead standards. | Reads Reddit posts and comments. |
+| Draft messages | Builds safe model input and validates each review-only draft. | Runs the model and shows drafts to a reviewer. |
+| Send messages | Schedules approved messages and records verified delivery states. | Sends through Reddit and returns the readback. |
 
-## Overview
+It also builds review queues, checks replies, and reports messages sent per day
+and total replies.
 
-Outreach keeps the tracked repo reusable and pushes live operator state into gitignored `projects/<slug>/`.
+## What you provide
 
-The repo now has a symmetric platform model:
+You need:
 
-- Reddit code lives under `src/reddit/`
-- X code lives under `src/x/`
-- Starter assets live under `starter-assets/`
-- Per-project runtime state lives under `projects/<slug>/reddit/` and `projects/<slug>/x/`
+- one or more Reddit accounts, each with a private cookie JSON connected in
+  your application's Reddit adapter;
+- a target audience, communities, keywords, and exclusions;
+- one or more example messages;
+- a draft mode: `exact`, `adapt`, or `new`;
+- a job type: `find_leads`, `draft_messages`, or `send_messages`; and
+- your own Reddit adapter, data store, UI, model runner, and job runner.
 
-## Why This Exists
+Pass only a stable account ID and Reddit username to `ii-outreach`. The account
+ID must map to that account's cookie file inside your adapter. Keep passwords,
+cookie values, file paths, tokens, and browser sessions out of the package.
 
-- Outreach work should be review-first, not “LLM says post this now.”
-- Product context should live in durable project state, not vanish into chat.
-- Platform auth, run logs, and staged actions should stay local and isolated per project.
-- Codex and Claude Code should be able to understand the repo shape quickly and operate it safely.
+## What you get back
 
-## Community
+Calls return plain data for your application to save or act on: a job plan,
+qualified leads, review decisions, drafts, schedules, delivery receipts,
+reply-check results, or statistics.
 
-- Discord: [Intelligent Iterations Discord](https://discord.gg/G7Qnnhy)
-- Issues: [GitHub Issues](https://github.com/intelligent-iterations/ii-outreach/issues)
-- Discussions: [GitHub Discussions](https://github.com/intelligent-iterations/ii-outreach/discussions)
-- Security: [SECURITY.md](https://github.com/intelligent-iterations/ii-outreach/blob/main/SECURITY.md)
+`ii-outreach` stores nothing between calls.
 
-## Project Model
+## Set up Reddit outreach
 
-Each product gets one gitignored project folder:
+### 1. Export one cookie JSON per Reddit account
 
-```text
-projects/<slug>/
-  workspace/
-  research/
-  reddit/
-    config.json
-    templates.json
-    guidance/
-    auth/
-    output/
-      actions/
-      logs/
-    tracking/
-  x/
-    config.json
-    auth/
-    output/
-      actions/
-      logs/
-    tracking/
+Finding leads and sending messages require an authenticated Reddit browser.
+Your host adapter therefore needs one current cookie JSON for every Reddit
+account it will use. Each file must contain only `reddit.com` cookies and must
+include `reddit_session`.
+
+Use your application's browser adapter to export the cookies from the account
+that will perform the work. Follow that adapter's authentication instructions
+and store each export as a private file outside the source checkout. This
+library accepts account references only; it does not extract browser cookies.
+
+Cookie files are credentials. Never commit them, paste them into setup data, or
+send them to the package.
+
+### 2. Map each cookie file in your Reddit adapter
+
+Your application keeps the secret mapping. For example:
+
+```js
+const redditAccounts = {
+  "reddit-main": {
+    username: "trail_builder",
+    cookiesPath: "/private/state/reddit-main.cookies.json"
+  }
+};
 ```
 
-Use `workspace/` for durable product context and `research/` for niche notes. Use platform folders for platform-specific config, auth, tracking, and action state.
+`cookiesPath` is adapter configuration, not an `ii-outreach` field. After the
+adapter verifies that the cookie belongs to `trail_builder`, give the package
+only this safe reference:
 
-## Quick Start
+```js
+{ id: "reddit-main", username: "trail_builder" }
+```
+
+The shared ID is the handoff: `ii-outreach` returns `reddit-main` in its job
+plan, and your adapter resolves that ID to the matching cookie file.
+
+### 3. Add your lead and message rules
+
+```js
+import { createRedditOutreachSetup } from "ii-outreach";
+
+const setup = createRedditOutreachSetup({
+  jobType: "draft_messages",
+  accounts: [
+    { id: "reddit-main", username: "trail_builder" }
+  ],
+  leadStandards: {
+    targetAudience: "Hikers looking for safer ways to plan routes.",
+    communities: ["hiking", "trailrunning"],
+    keywords: ["route planner", "trail conditions"],
+    maxSourceAgeDays: 30,
+    excludedUsernames: ["AutoModerator"]
+  },
+  drafting: {
+    mode: "adapt",
+    maxWordChanges: 3,
+    exampleMessages: [
+      {
+        id: "friendly-offer",
+        name: "Friendly link offer",
+        message: "I built example-app for this and can send you the link if you want."
+      }
+    ]
+  }
+});
+```
+
+The setup rejects unsupported fields, duplicate accounts, missing standards,
+invalid limits, and unknown job or draft modes.
+
+### 4. Choose a job
+
+Set `jobType` to one of:
+
+- `find_leads` - collect Reddit evidence, then qualify matching people;
+- `draft_messages` - turn qualified leads into review-only drafts; or
+- `send_messages` - queue messages that a human already approved.
+
+`setup.job.nextAction` tells your application which adapter step comes next.
+Changing `jobType` creates a different plan without adding hidden side effects.
+
+### Choose how drafts use your examples
+
+| Mode | Result |
+| --- | --- |
+| `exact` | Uses the selected example message word for word. |
+| `adapt` | Uses the selected example with up to three word changes. You can set a lower limit. |
+| `new` | Writes a new message using the selected example only as a style reference. |
+
+The selected mode is enforced when model output is materialized. It is not a
+suggestion to the model.
+
+Connect the setup to participant drafting like this:
+
+```js
+import {
+  participantDraftAliasesFromSetup,
+  validateParticipantDraftInput
+} from "ii-outreach";
+
+const draftInput = validateParticipantDraftInput({
+  campaign,
+  candidates,
+  aliases: participantDraftAliasesFromSetup(setup),
+  draftMode: setup.drafting.mode,
+  maxWordChanges: setup.drafting.maxWordChanges
+});
+```
+
+## Run the working example
+
+Clone the source and run the example with Node.js 22 or later:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements/reddit.txt
-pip install -r requirements/x.txt
+git clone https://github.com/intelligent-iterations/ii-outreach.git
+cd ii-outreach
+npm ci
+npm run build
+node examples/quick-start.mjs
 ```
 
-Bootstrap a project:
+Expected output:
+
+```json
+{
+  "job": "draft_messages",
+  "accounts": [
+    "reddit-main"
+  ],
+  "communities": 2,
+  "keywords": 2,
+  "draftMode": "adapt",
+  "exampleMessages": 2,
+  "maxWordChanges": 3,
+  "nextAction": "build_review_only_drafts",
+  "humanApprovalRequired": true
+}
+```
+
+This example proves that the complete setup is valid and shows the exact job
+plan returned to the host. It does not browse Reddit or send a message. See
+[`examples/quick-start.mjs`](examples/quick-start.mjs).
+
+## Install in another application
+
+Build the package:
 
 ```bash
-export OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics"
-
-mkdir -p \
-  "$OUTREACH_PROJECT_DIR/workspace" \
-  "$OUTREACH_PROJECT_DIR/research" \
-  "$OUTREACH_PROJECT_DIR/reddit/auth" \
-  "$OUTREACH_PROJECT_DIR/reddit/guidance" \
-  "$OUTREACH_PROJECT_DIR/reddit/output/actions" \
-  "$OUTREACH_PROJECT_DIR/reddit/output/logs" \
-  "$OUTREACH_PROJECT_DIR/reddit/tracking" \
-  "$OUTREACH_PROJECT_DIR/x/auth" \
-  "$OUTREACH_PROJECT_DIR/x/output/actions" \
-  "$OUTREACH_PROJECT_DIR/x/output/logs" \
-  "$OUTREACH_PROJECT_DIR/x/tracking"
-
-cp starter-assets/reddit/config.example.json "$OUTREACH_PROJECT_DIR/reddit/config.json"
-cp starter-assets/reddit/templates.example.json "$OUTREACH_PROJECT_DIR/reddit/templates.json"
-cp -R starter-assets/reddit/guidance/. "$OUTREACH_PROJECT_DIR/reddit/guidance/"
-cp starter-assets/x/config.example.json "$OUTREACH_PROJECT_DIR/x/config.json"
-cp starter-assets/x/.env.example "$OUTREACH_PROJECT_DIR/x/.env"
+npm run build
 ```
 
-Or start from the tracked scaffold:
+Install it from your application directory:
 
 ```bash
-cp -R projects/_template/. "$OUTREACH_PROJECT_DIR"
+npm install --save /path/to/ii-outreach
 ```
 
-Then ask the operator agent for a real setup, for example:
+Import the full framework or individual functions:
 
-```text
-My product is an ingredient-checking app for health-conscious shoppers.
-Target audience is people comparing Yuka, Think Dirty, and clean beauty tools.
-Voice should be helpful, specific, low-pressure, and honest that I built it.
-Turn this into a Reddit + X outreach setup and stage reviewable actions.
+```js
+import {
+  createRedditOutreachSetup,
+  outreachFramework
+} from "ii-outreach";
+
+console.log(outreachFramework.capabilityNames);
 ```
 
-## Commands
+## Use the CLI
 
-Reddit:
+Show every command:
 
 ```bash
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.reddit.setup_auth
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.reddit.main
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.reddit.actions summary
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.reddit.review_ui
+npm run start -- help
 ```
 
-X:
+Common tasks:
 
 ```bash
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.x.setup_auth
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.x.main --headless
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.x.actions summary
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.x.main --dispatch-approved
+npm run start -- review-reddit --leads ./leads.json
+npm run start -- approve-reddit --leads ./leads.json \
+  --lead-id lead-1 --reviewed-by host:user-123
+npm run start -- schedule-reddit --leads ./leads.json \
+  --approved-at 2026-09-05T18:00:00Z
 ```
 
-Default runs are review-first. They stage artifacts instead of posting immediately.
+## Safety rules
 
-## Action Queues
+- A human approves the final message before delivery.
+- AI output creates drafts only.
+- Lead discovery requires recent, exact Reddit source evidence.
+- Response checks are read-only and never send follow-ups.
+- Missing adapters fail explicitly. The package never switches providers.
 
-Canonical action roots:
+## Reference
 
-- Reddit: `projects/<slug>/reddit/output/actions/`
-- X: `projects/<slug>/x/output/actions/`
+- [Runnable setup example](examples/quick-start.mjs)
+- [Framework and adapter guide](docs/stateless-framework.md)
+- [Reddit participant workflow](docs/reddit-participant-research.md)
+- [Machine-readable API contract](contracts/outreach-framework.v1.json)
+- [Example adapter catalog](templates/adapter-catalog/reddit-participant-discovery-catalog.yaml)
 
-Canonical layout:
-
-```text
-output/actions/
-  by_status/
-    pending_review/
-    approved/
-    scheduled/
-    rejected/
-    dispatching/
-    dispatched/
-    failed/
-  by_run/
-    <run-id>/
-      manifest.json
-```
-
-Use the CLI to inspect queues:
+Development commands:
 
 ```bash
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.reddit.actions list --status approved
-OUTREACH_PROJECT_DIR="$PWD/projects/acme-analytics" python -m src.x.actions list --status approved
+npm run check
+npm test
+npm run build
+npm run generate
 ```
 
-## Repo Layout
+## License and support
 
-```text
-starter-assets/
-  reddit/
-  x/
-
-requirements/
-  reddit.txt
-  x.txt
-
-src/
-  reddit/
-  x/
-
-tests/
-  x/
-```
-
-See [projects/README.md](./projects/README.md), [AGENTS.md](./AGENTS.md), and [docs/platforms/x.md](./docs/platforms/x.md) for the repo contract.
-
-## Open Source
-
-- License: [MIT](./LICENSE)
-- Contributing: [CONTRIBUTING.md](./CONTRIBUTING.md)
-- Code of conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
-- Security policy: [SECURITY.md](./SECURITY.md)
+[MIT](LICENSE). See [CONTRIBUTING.md](CONTRIBUTING.md) for development,
+[SECURITY.md](SECURITY.md) for private vulnerability reports, and
+[the migration guide](docs/migration.md) for changes from the earlier scaffolding.
